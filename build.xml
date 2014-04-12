@@ -9,7 +9,7 @@
         <mkdir dir="${target.classes.dir}" />
     </target>
 
-    <target name="compile" depends="init">
+	<target name="build" depends="init">
         <antlr3 target="${main.grammar.src}"
                 outputdirectory="${main.java.src}"
                 debug="false">
@@ -17,8 +17,10 @@
             <classpath>
                 <fileset dir="${lib.dir}/compile-time" />
             </classpath>
-        </antlr3>
-
+		</antlr3>
+    </target>
+		
+    <target name="compile" depends="build">
         <javac srcdir="${main.java.src}"
             destdir="${target.classes.dir}"
             verbose="true"
