@@ -1,0 +1,85 @@
+gunit Sparql;
+
+/* TEST 1 */
+query:
+<<
+PREFIX cd: <http://example.org/cd/>
+SELECT ?titolo ?autore ?anno
+FROM <http://cd.com/listacd.ttl>
+WHERE {
+    ?titolo ?autore ?autore.
+    ?titolo ?anno ?ann .
+}
+>> OK
+
+/* TEST 2 */
+
+query:
+<<
+PREFIX cd: <http://example.org/cd/>
+SELECT ?titolo ?autore ?anno
+FROM <http://cd.com/listacd.ttl>
+WHERE {
+    ?titolo cd:autore ?autore.
+    OPTIONAL {
+        ?titolo cd:anno ?anno
+    }
+}
+>> OK
+
+/* TEST 3 */
+
+query:
+<<
+PREFIX cd: <http://example.org/cd/>
+SELECT ?titolo ?autore ?anno
+FROM <http://cd.com/listacd.ttl>
+WHERE {
+    { ?titolo cd:autore ?autore } 
+        UNION
+    { ?titolo cd:anno ?anno }
+}
+>> OK
+
+/* TEST 4 */
+
+query:
+<<
+PREFIX cd: <http://example.org/cd/>
+SELECT ?titolo ?anno
+FROM <http://cd.com/listacd.ttl>
+WHERE {
+    ?titolo cd:anno ?anno.
+    FILTER (?anno > 2000).
+}
+>> OK
+
+/* TEST 5 */
+
+query:
+<<
+PREFIX cd: <http://example.org/cd/>
+SELECT ?titolo ?autore
+FROM <http://cd.com/listacd.ttl>
+WHERE {
+    ?titolo cd:autore ?autore .
+    FILTER REGEX(?autore, "^au", "i")
+}
+>> OK
+
+/* TEST 6 */
+
+query:
+<<
+PREFIX cd: <http://example.org/cd/>
+SELECT ?titolo ?autore ?anno
+FROM  <http://cd.com/listacd.ttl>
+WHERE {
+    { ?titolo cd:autore ?autore }
+        UNION
+    { ?titolo cd:anno ?anno }
+}
+ORDER BY DESC(?autore) 
+LIMIT 10
+OFFSET 10
+>> OK
