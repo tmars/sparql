@@ -1,2 +1,3 @@
-src/main/java/
-target/
+src/java/
+bin/
+test/*.result

@@ -1,17 +1,17 @@
-<project xmlns:antlr="antlib:org/apache/tools/ant/antlr" basedir="." name="sparql-grammar" default="test">
+<project xmlns:antlr="antlib:org/apache/tools/ant/antlr" basedir="." name="sparql" default="test">
 
     <taskdef name="antlr3" classname="org.apache.tools.ant.antlr.ANTLR3" classpath="tools/antlr3.jar"/>
 
     <property file="build.properties" />
 
     <target name="init">
-        <mkdir dir="${main.java.src}" />
-        <mkdir dir="${target.classes.dir}" />
+        <mkdir dir="${java.src}" />
+        <mkdir dir="${bin.dir}" />
     </target>
 
 	<target name="build" depends="init">
-        <antlr3 target="${main.grammar.src}"
-                outputdirectory="${main.java.src}"
+        <antlr3 target="${grammar.src}"
+                outputdirectory="${java.src}"
                 debug="false">
             <jvmarg value="-Xmx256m" />
             <classpath>
@@ -21,8 +21,9 @@
     </target>
 		
     <target name="compile" depends="build">
-        <javac srcdir="${main.java.src}"
-            destdir="${target.classes.dir}"
+        <javac srcdir="${main.src}"
+            sourcepath="${java.src}"
+            destdir="${bin.dir}"
             verbose="true"
             optimize="true"
             debug="true">
@@ -32,21 +33,32 @@
         </javac>
     </target>
 
-    <target name="test" depends="compile" description="Compiles and tests the SPARQL grammar">
+    <target name="test" depends="compile">
         <java classname="${test.classname}" fork="true" maxmemory="256m">
             <classpath>
                 <fileset dir="${lib.dir}/compile-time" />
                 <fileset dir="${lib.dir}/test" />
-                <pathelement location="${target.classes.dir}" />
+                <pathelement location="${bin.dir}" />
             </classpath>
-            <arg value="${test.grammar.src}" />
+            <arg value="${test.grammar}" />
         </java>
+    </target> 
+    
+    <target name="exec">
+        <java classname="${exec_query.classname}" output="${result.sparql}">
+            <classpath>
+                <fileset dir="${lib.dir}/compile-time" />
+                <pathelement location="${bin.dir}" />
+            </classpath>
+            <arg value="${query.sparql}" />
+        </java>
+        <echo>exec query ${result.sparql} finished</echo> 
     </target>
 
     <target name="clean">
         <delete verbose="true" includeemptydirs="true">
-            <fileset dir="${main.java.src}" />
-            <fileset dir="${target.classes.dir}" />
+            <fileset dir="${java.src}" />
+            <fileset dir="${bin.dir}" />
         </delete>
     </target>
 
