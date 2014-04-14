@@ -5,11 +5,21 @@ options {
 }
 
 @header{
-	
+    import java.util.ArrayList;
+    import java.util.List;
+    import java.util.Hashtable;
 }
 
 @members{
-	
+    List<String> bases = new ArrayList<>();
+    Hashtable<String, String> prefixes = new Hashtable<String, String>();
+    
+    SparqlQuery query = null;
+
+    private SelectQuery sq() {return (SelectQuery)query;}
+    private AskQuery aq() {return (AskQuery)query;}
+    private ConstructQuery cq() {return (ConstructQuery)query;}
+    private DescribeQuery dq() {return (DescribeQuery)query;}
 }
 
 @rulecatch { }
@@ -17,7 +27,8 @@ options {
 // PARSER RULES
 
 query
-    : prologue ( selectQuery | constructQuery | describeQuery | askQuery ) EOF
+    : 
+    prologue ( selectQuery | constructQuery | describeQuery | askQuery ) EOF { query.info(); }
     ;
 
 prologue
@@ -25,27 +36,35 @@ prologue
     ;
 
 baseDecl
-    : 'BASE' IRI_REF
+    : 'BASE' R=IRI_REF {bases.add($R.text);}
     ;
 
 prefixDecl
-    : 'PREFIX' PNAME_NS IRI_REF
+    : 'PREFIX' P=PNAME_NS R=IRI_REF {prefixes.put($P.text, $R.text);}
     ;
 
 selectQuery
-    : 'SELECT' ( 'DISTINCT' | 'REDUCED' )? ( var+ | '*' ) datasetClause* whereClause solutionModifier {System.out.println("selectQuery");}
+    : 'SELECT' {query = new SelectQuery(bases, prefixes);} 
+        ( 'DISTINCT' {sq().setIsDistinct(true);})? 
+        ( (var {sq().addField($var.text);})+ 
+        | '*' {sq().setAllFields(true);}
+        ) 
+        datasetClause* whereClause solutionModifier 
     ;
 
 constructQuery
-    : 'CONSTRUCT' constructTemplate datasetClause* whereClause solutionModifier {System.out.println("constructQuery");}
+    : 'CONSTRUCT' {query = new ConstructQuery(bases, prefixes);} 
+        constructTemplate datasetClause* whereClause solutionModifier
     ;
 
 describeQuery
-    : 'DESCRIBE' ( varOrIRIref+ | '*' ) datasetClause* whereClause? solutionModifier {System.out.println("describeQuery");}
+    : 'DESCRIBE' {query = new DescribeQuery(bases, prefixes);} 
+        ( varOrIRIref+ | '*' ) datasetClause* whereClause? solutionModifier 
     ;
 
 askQuery
-    : 'ASK' datasetClause* whereClause {System.out.println("askQuery");}
+    : 'ASK' {query = new AskQuery(bases, prefixes);}
+        datasetClause* whereClause 
     ;
 
 datasetClause
@@ -53,11 +72,11 @@ datasetClause
     ;
 
 defaultGraphClause
-    : sourceSelector
+    : s=sourceSelector {query.setDataset($s.text);}
     ;
 
 namedGraphClause
-    : 'NAMED' sourceSelector
+    : 'NAMED' s=sourceSelector {query.setDataset($s.text);}
     ;
 
 sourceSelector
@@ -65,7 +84,7 @@ sourceSelector
     ;
 
 whereClause
-    : 'WHERE'? groupGraphPattern
+    : 'WHERE'? groupGraphPattern 
     ;
 
 solutionModifier
@@ -86,11 +105,11 @@ orderCondition
     ;
 
 limitClause
-    : 'LIMIT' INTEGER
+    : 'LIMIT' N=INTEGER {query.setLimit(Integer.parseInt($N.text));}
     ;
 
 offsetClause
-    : 'OFFSET' INTEGER
+    : 'OFFSET' N=INTEGER {query.setOffset(Integer.parseInt($N.text));}
     ;
 
 groupGraphPattern
@@ -142,11 +161,12 @@ constructTriples
     ;
 
 triplesSameSubject
-    : varOrTerm propertyListNotEmpty | triplesNode propertyList
+    : v=varOrTerm propertyListNotEmpty
+    | triplesNode propertyList
     ;
 
 propertyListNotEmpty
-    : verb objectList ( ';' ( verb objectList )? )*
+    : verb objectList ( ';' ( v=verb objectList )? )*
     ;
 
 propertyList
@@ -161,9 +181,9 @@ object
     : graphNode
     ;
 
-verb
-    : varOrIRIref
-    | 'a'
+verb returns [String type, String value]
+    : v=varOrIRIref {$type = $v.type; $value = $v.value;}
+    | 'a' {$type = "iri_ref"; $value = "rdf:type";}
     ;
 
 triplesNode
@@ -183,13 +203,14 @@ graphNode
     : varOrTerm | triplesNode
     ;
 
-varOrTerm
-    : var
-    | graphTerm
+varOrTerm returns [String type, String value]
+    : v=var {$type="var"; $value=$v.text;}
+    | g=graphTerm {$type="term"; $value=$g.text;}
     ;
 
-varOrIRIref
-    : var | iriRef
+varOrIRIref returns [String type, String value]
+    : v=var {$type="var"; $value=$v.text;}
+    | g=iriRef {$type="iri_ref"; $value=$g.text;}
     ;
 
 var
