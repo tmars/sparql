@@ -137,11 +137,13 @@ groupOrUnionGraphPattern
     ;
 
 filter
-    : 'FILTER' constraint
+    : 'FILTER' constraint 
     ;
 
 constraint
-    : brackettedExpression | builtInCall | functionCall
+    : v=brackettedExpression {query.getWhere().addFilter($v.value, "expr");} 
+    | builtInCall 
+    | functionCall
     ;
 
 functionCall
@@ -161,24 +163,28 @@ constructTriples
     ;
 
 triplesSameSubject
-    : v=varOrTerm propertyListNotEmpty
-    | triplesNode propertyList
+    : s=varOrTerm {query.getWhere().start($s.value, $s.type);} 
+    	propertyListNotEmpty {query.getWhere().finish();} 
+    | triplesNode 
+    	propertyList {query.getWhere().finish();} 
     ;
 
 propertyListNotEmpty
-    : verb objectList ( ';' ( v=verb objectList )? )*
+    : p=verb {query.getWhere().addPredicate($p.value, $p.type);} 
+    	objectList 
+    	( ';' ( p=verb {query.getWhere().addPredicate($p.value, $p.type);} objectList )? )* 
     ;
 
 propertyList
-    : propertyListNotEmpty?
+    : propertyListNotEmpty? 
     ;
 
 objectList
-    : object ( ',' object )*
+    : object ( ',' object )* 
     ;
 
 object
-    : graphNode
+    : o=graphNode {query.getWhere().addObject($o.value, $o.type);}
     ;
 
 verb returns [String type, String value]
@@ -199,8 +205,9 @@ collection
     : '(' graphNode+ ')'
     ;
 
-graphNode
-    : varOrTerm | triplesNode
+graphNode returns [String type, String value]
+    : o=varOrTerm {$type = $o.type; $value = $o.value;}
+    | triplesNode {$type = ""; $value = "";}
     ;
 
 varOrTerm returns [String type, String value]
@@ -270,8 +277,8 @@ primaryExpression
     : brackettedExpression | builtInCall | iriRefOrFunction | rdfLiteral | numericLiteral | booleanLiteral | var
     ;
 
-brackettedExpression
-    : '(' expression ')'
+brackettedExpression returns [String value]
+    : '(' e=expression ')' {$value = $e.text;}
     ;
 
 builtInCall

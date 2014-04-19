@@ -6,8 +6,8 @@ public class SparqlQuery {
     int limit = -1;
     int offset = -1;
     List<String> bases = null;
-    List<SparqlWhere> wheres = null;
     Hashtable<String, String> prefixes = null;
+    SparqlWhere where = new SparqlWhere();
     
     public SparqlQuery(List<String> bs, Hashtable<String, String> ps)
     {
@@ -42,22 +42,7 @@ public class SparqlQuery {
                 System.out.println("\t" + pr + " -> " + prefixes.get(pr));
             }
         }
-        if (wheres.isEmpty()) 
-        {
-            System.out.println("where: [NONE]");
-        }
-        else 
-        {
-            System.out.println("where: ");
-            for (SparqlWhere w : wheres) 
-                System.out.println(
-                    w.getSubject() + "(" + w.getSubjectType()+ ") " +
-                    w.getPredicate() + "(" + w.getPredicateType()+ ") " +
-                    w.getObject() + "(" + w.getObjectType()+ ")"
-                );
-        }
-        
-        
+        where.info();
     }
     
     public void setDataset(String d)
@@ -75,8 +60,8 @@ public class SparqlQuery {
         offset = v;
     }
     
-    public void addWhere(SparqlWhere w)
+    public SparqlWhere getWhere()
     {
-        wheres.add(w);
+        return where;
     }
 }

@@ -1,10 +1,7 @@
-PREFIX cd: <http://example.org/cd/>
-SELECT ?titolo ?autore ?anno
-FROM <http://cd.com/listacd.ttl>
-WHERE {
-    ?titolo ?autore1 ?autore2;
-        ?anno ?ann .
+PREFIX space: <http://purl.org/net/schemas/space/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT ?disc ?label
+{
+  <http://nasa.dataincubator.org/spacecraft/1968-089A> space:discipline ?disc .
+  ?disc rdfs:label ?label
 }
-ORDER BY DESC(?titolo)
-OFFSET 2
-LIMIT 1
