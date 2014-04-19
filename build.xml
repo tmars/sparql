@@ -54,6 +54,16 @@
         </java>
         <echo>exec query ${result.sparql} finished</echo> 
     </target>
+    
+    <target name="jena">
+        <java classname="${jena_test.classname}" output="${result.jena}">
+            <classpath>
+                <fileset dir="${lib.dir}/compile-time" />
+                <pathelement location="${bin.dir}" />
+            </classpath>
+        </java>
+        <echo>exec query ${result.jena} finished</echo> 
+    </target>
 
     <target name="clean">
         <delete verbose="true" includeemptydirs="true">
