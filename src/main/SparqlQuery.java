@@ -18,6 +18,7 @@ public abstract class SparqlQuery {
     List<String> bases = null;
     Hashtable<String, String> prefixes = null;
     SparqlWhere where = new SparqlWhere();
+    SparqlOrder order = new SparqlOrder();
     
     public SparqlQuery(List<String> bs, Hashtable<String, String> ps)
     {
@@ -56,6 +57,7 @@ public abstract class SparqlQuery {
             }
         }
         where.info();
+        order.info();
     }
     
     public void setDataset(String d)
@@ -76,6 +78,11 @@ public abstract class SparqlQuery {
     public SparqlWhere getWhere()
     {
         return where;
+    }
+    
+    public SparqlOrder getOrder()
+    {
+        return order;
     }
     
     protected abstract void execute(List<Hashtable<String, String>> results);
@@ -178,6 +185,7 @@ public abstract class SparqlQuery {
             }
             prevResults = curResults;
         }
+        prevResults = order.sort(prevResults);
         prevResults = makeOffset(prevResults);
         prevResults = makeLimit(prevResults);
         execute(prevResults);

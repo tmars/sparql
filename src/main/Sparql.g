@@ -100,8 +100,10 @@ orderClause
     ;
 
 orderCondition
-    : ( ( 'ASC' | 'DESC' ) brackettedExpression )
-    | ( constraint | var )
+    : 'ASC'  a=brackettedExpression {query.getOrder().addVar($a.value, SparqlOrder.Sort.ASC);} 
+    | 'DESC'  b=brackettedExpression {query.getOrder().addVar($b.value, SparqlOrder.Sort.DESC);} 
+    | constraint 
+    | v=var {query.getOrder().addVar($v.text, SparqlOrder.Sort.ASC);} 
     ;
 
 limitClause
