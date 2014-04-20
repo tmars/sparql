@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Hashtable;
+import dnl.utils.text.table.TextTable;
 
 public class SelectQuery extends SparqlQuery {
     private boolean isDistinct = false;
@@ -25,6 +26,40 @@ public class SelectQuery extends SparqlQuery {
     public void addField(String name)
     {
         fields.add(name);
+    }
+    
+    protected void execute(List<Hashtable<String, String>> results)
+    {   
+        if (allFields) 
+        {
+            for (Hashtable<String, String> res: results) 
+            {
+                for (String v : res.keySet()) 
+                    fields.add(v);
+                break;
+            }
+        }
+        String[] columnNames = fields.toArray(new String[fields.size()]);
+        String[][] data = new String[results.size()][fields.size()];
+        
+        int i = 0;
+        for (Hashtable<String, String> res: results) 
+        {
+            int j = 0;
+            for (String v : fields) 
+            {
+                data[i][j] = res.get(v);
+                j++;
+            }
+            i++;
+        }
+                                                                       
+        TextTable tt = new TextTable(columnNames, data);         
+        // this adds the numbering on the left      
+        // tt.setAddRowNumbering(true);      
+        // sort by the first column                              
+        //tt.setSort(0);                                                 
+        tt.printTable();                                 
     }
     
     public void info()

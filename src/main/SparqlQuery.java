@@ -1,7 +1,17 @@
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.Set;
+import java.util.HashSet;
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.Property;
+import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.rdf.model.StmtIterator;
+import com.hp.hpl.jena.rdf.model.RDFNode;
+import com.hp.hpl.jena.rdf.model.Statement;
 
-public class SparqlQuery {
+public abstract class SparqlQuery {
     String dataset = "";
     int limit = -1;
     int offset = -1;
@@ -28,8 +38,10 @@ public class SparqlQuery {
         else
         {
             System.out.println("bases:");
-                for (String n : bases) 
-                    System.out.println("\t" + n);
+            for (String n : bases) 
+            {
+                System.out.println("\t" + n);
+            }
         }
         if (prefixes.isEmpty()) 
         {
@@ -38,7 +50,8 @@ public class SparqlQuery {
         else
         {
             System.out.println("prefixes:");
-            for (String pr : prefixes.keySet()) {
+            for (String pr : prefixes.keySet()) 
+            {
                 System.out.println("\t" + pr + " -> " + prefixes.get(pr));
             }
         }
@@ -63,5 +76,172 @@ public class SparqlQuery {
     public SparqlWhere getWhere()
     {
         return where;
+    }
+    
+    protected abstract void execute(List<Hashtable<String, String>> results);
+    
+    protected void getResult(String filename)
+    {
+        Model model = ModelFactory.createDefaultModel();
+        model.read(filename);
+        
+        List<Hashtable<String, String>> prevResults = null;
+        // делаем отборы по всем триплетам условия выборки
+        for (SparqlWhere.WhereTriplet whereTrp : where.triplets) 
+        {
+            List<Hashtable<String, String>> curResults = new ArrayList<>();
+        
+            whereTrp.subject = getVarTermIRI(whereTrp.subject, whereTrp.subjectType);
+            whereTrp.predicate = getVarTermIRI(whereTrp.predicate, whereTrp.predicateType);
+            whereTrp.object = getVarTermIRI(whereTrp.object, whereTrp.objectType);
+        
+            // список утверждений в Модели
+            StmtIterator iter = model.listStatements();
+         
+            // вывод предиката, субъекта и объекта каждого утверждения
+            while (iter.hasNext()) 
+            {
+                Hashtable<String, String> curRes = new Hashtable<String, String>();
+                Triplet dataTrp = getTripletFromStatement(iter.nextStatement());
+               
+                boolean flag = true;
+                
+                // subject
+                if (whereTrp.subjectType.equals("var")) 
+                {
+                    curRes.put(whereTrp.subject, dataTrp.subject);
+                } 
+                else 
+                {
+                    if (!whereTrp.subject.equals(dataTrp.subject))
+                        flag = false;
+                }
+                
+                // predicate
+                if (whereTrp.predicateType.equals("var")) 
+                {
+                    curRes.put(whereTrp.predicate, dataTrp.predicate);
+                } 
+                else 
+                {
+                    if (!whereTrp.predicate.equals(dataTrp.predicate))
+                        flag = false;
+                }
+                
+                // object
+                if (whereTrp.objectType.equals("var")) 
+                {
+                    curRes.put(whereTrp.object, dataTrp.object);
+                } 
+                else 
+                {
+                    if (!whereTrp.object.equals(dataTrp.object))
+                        flag = false;
+                }
+              
+                // Ищем соответствие с предыдущими результатами
+                if (prevResults != null) 
+                {
+                    boolean isFinded = false;
+                    // Просматриваем предыдущие результаты
+                    for (Hashtable<String, String> prevRes: prevResults) 
+                    {
+                        // Определяем соответсвия по переменным и значениям
+                        Set<String> intersection = new HashSet<String>(prevRes.keySet());
+                        intersection.retainAll(curRes.keySet());
+                        boolean isEquals = true;
+                        for (String v : intersection) 
+                        {
+                            if (!curRes.get(v).equals(prevRes.get(v))) 
+                            {
+                                isEquals = false;
+                                break;
+                            }
+                        }
+                        // Найден пересекающийся по переменным и значениям результат
+                        if (isEquals) 
+                        {
+                            // Добавляем недостоющие значения переменных
+                            for (String v : prevRes.keySet()) 
+                            {
+                                curRes.put(v, prevRes.get(v));
+                            }
+                            isFinded = true;
+                            break;
+                        }
+                    } 
+                    if (!isFinded)
+                        flag = false;
+                }
+                
+                // Добавляем результат к текущему отбору
+                if (flag) 
+                {
+                    curResults.add(curRes);
+                }
+            }
+            prevResults = curResults;
+        }
+        prevResults = makeOffset(prevResults);
+        prevResults = makeLimit(prevResults);
+        execute(prevResults);
+    }
+    
+    private List<Hashtable<String, String>> makeOffset(List<Hashtable<String, String>> results)
+    {
+        if (offset > 0)
+        {
+            int i = 0;
+            while (i < offset && results.size() > 0) 
+            {
+                results.remove(0);
+                i++;
+            }
+        }
+        return results;
+    }
+    
+    private List<Hashtable<String, String>> makeLimit(List<Hashtable<String, String>> results)
+    {
+        if (limit >= 0)
+        {
+            while (results.size() > limit) 
+            {
+                results.remove(results.size()-1);
+            }
+        }
+        return results;
+    }
+    
+    private Triplet getTripletFromStatement(Statement stmt)
+    {
+        String s = stmt.getSubject().toString();     // получить субъект
+        String p = stmt.getPredicate().toString();   // получить предикат
+        String o;
+        RDFNode to = stmt.getObject();      // получить объект
+        if (to instanceof Resource) 
+           o = to.toString();
+        else // объект - литерал
+            o = "\"" + to.toString() + "\"";
+            
+        return new Triplet(s, p, o);
+    }
+    
+    private String getVarTermIRI(String value, String type)
+    {
+        String r = "";
+        if (type.equals("short_iri"))
+            r = getRealIRI(value);
+        else // var | rdf_lit | iri | num_lit | bool_lit | blank
+            r = value;
+        return r;
+    }
+    
+    private String getRealIRI(String iri)
+    {
+        String[] parts = iri.split(":");
+        if (parts.length == 2 && prefixes.containsKey(parts[0] + ":"))
+            return prefixes.get(parts[0] + ":") + parts[1];
+        return "";
     }
 }

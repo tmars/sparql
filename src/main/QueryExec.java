@@ -8,5 +8,6 @@ public class QueryExec {
         CommonTokenStream tokens = new CommonTokenStream(lexer);
         SparqlParser parser = new SparqlParser(tokens);
         parser.query(); 
+        parser.query.getResult(args[1]);
     }
 }

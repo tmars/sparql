@@ -36,11 +36,11 @@ prologue
     ;
 
 baseDecl
-    : 'BASE' R=IRI_REF {bases.add($R.text);}
+    : 'BASE' R=IRI_REF {bases.add($R.text.substring(1, $R.text.length()-1));}
     ;
 
 prefixDecl
-    : 'PREFIX' P=PNAME_NS R=IRI_REF {prefixes.put($P.text, $R.text);}
+    : 'PREFIX' P=PNAME_NS R=IRI_REF {prefixes.put($P.text, $R.text.substring(1, $R.text.length()-1));}
     ;
 
 selectQuery
@@ -125,7 +125,7 @@ graphPatternNotTriples
     ;
 
 optionalGraphPattern
-    : 'OPTIONAL' groupGraphPattern
+    : 'OPTIONAL' {query.getWhere().setOptional(true);} groupGraphPattern {query.getWhere().setOptional(false);}
     ;
 
 graphGraphPattern
@@ -212,12 +212,12 @@ graphNode returns [String type, String value]
 
 varOrTerm returns [String type, String value]
     : v=var {$type="var"; $value=$v.text;}
-    | g=graphTerm {$type="term"; $value=$g.text;}
+    | g=graphTerm {$type=$g.type; $value=$g.value;}
     ;
 
 varOrIRIref returns [String type, String value]
     : v=var {$type="var"; $value=$v.text;}
-    | g=iriRef {$type="iri_ref"; $value=$g.text;}
+    | g=iriRef {$type=$g.type; $value=$g.value;}
     ;
 
 var
@@ -225,12 +225,12 @@ var
     | VAR2
     ;
 
-graphTerm
-    : iriRef
-    | rdfLiteral
-    | numericLiteral
-    | booleanLiteral
-    | blankNode
+graphTerm returns [String type, String value]
+    : a=iriRef {$type=$a.type; $value=$a.value;}
+    | b=rdfLiteral {$type="rdf_lit"; $value=$b.text;}
+    | c=numericLiteral {$type="num_lit"; $value=$c.text;}
+    | d=booleanLiteral {$type="bool_lit"; $value=$d.text;}
+    | e=blankNode {$type="blank"; $value=$e.text;}
     | NIL
     ;
 
@@ -340,9 +340,9 @@ string
     /* | STRING_LITERAL_LONG('0'..'9') | STRING_LITERAL_LONG('0'..'9')*/
     ;
 
-iriRef
-    : IRI_REF
-    | prefixedName
+iriRef returns [String type, String value]
+    : t=IRI_REF {$type="iri"; $value=$t.text.substring(1,$t.text.length()-1);}
+    | p=prefixedName  {$type="short_iri"; $value=$p.text;}
     ;
 
 prefixedName

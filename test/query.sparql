@@ -1,7 +1,8 @@
-PREFIX space: <http://purl.org/net/schemas/space/>
-PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-SELECT ?disc ?label
-{
-  <http://nasa.dataincubator.org/spacecraft/1968-089A> space:discipline ?disc .
-  ?disc rdfs:label ?label
+PREFIX vCard: <http://www.w3.org/2001/vcard-rdf/3.0#>
+SELECT *
+WHERE {
+    ?name vCard:N ?name2 .
+    ?name2 vCard:Given ?name3 .
 }
+LIMIT 1
+OFFSET 2

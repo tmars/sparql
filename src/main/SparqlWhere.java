@@ -3,27 +3,15 @@ import java.util.ArrayList;
 
 public class SparqlWhere 
 {
-    
-    private class Triplet
+    public class WhereTriplet extends Triplet
     {
-        private String subject;
-        private String subjectType;
-        private String predicate; 
-        private String predicateType; 
-        private String object;
-        private String objectType;
-        
-        public Triplet(String s, String st, String p, String pt, String o, String ot)
+        public boolean isOptional = false;
+        public WhereTriplet(String s, String st, String p, String pt, String o, String ot, boolean isOpt)
         {
-            subject = s;
-            subjectType = st;
-            predicate = p;
-            predicateType = pt;
-            object = o;
-            objectType = ot;
+            super(s, st, p, pt, o, ot);
+            isOptional = isOpt;
         }
     }
-    
     private class Filter
     {
         private String type;
@@ -40,20 +28,10 @@ public class SparqlWhere
     String curSubjectType = "";
     String curPredicate = "";
     String curPredicateType = "";
-    List<Triplet> triplets = new ArrayList<>();
+    boolean isOptional = false;
+    
+    List<WhereTriplet> triplets = new ArrayList<>();
     List<Filter> filters = new ArrayList<>();
-    
-    public void addTriplet(String s, String st, String p, String pt, String o, String ot)
-    {
-        Triplet t = new Triplet(s, st, p, pt, o, ot);
-	    triplets.add(t);
-    }
-    
-    public void addTwice(String p, String pt, String o, String ot)
-    {
-        Triplet t = new Triplet("NO", "NO", p, pt, o, ot);
-	    triplets.add(t);
-    }
     
     public void start(String v, String t)
     {
@@ -69,12 +47,18 @@ public class SparqlWhere
     
     public void addObject(String v, String t)
     {
-        Triplet r = new Triplet(
+        WhereTriplet r = new WhereTriplet(
             curSubject, curSubjectType, 
             curPredicate, curPredicateType, 
-            v, t
+            v, t,
+            isOptional
         );
 	    triplets.add(r);
+    }
+    
+    public void setOptional(boolean f)
+    {
+        isOptional = f;
     }
     
     public void finish()

@@ -6,4 +6,9 @@ public class ConstructQuery extends SparqlQuery {
     {
         super(bs, ps);
     }
+    
+    protected void execute(List<Hashtable<String, String>> results)
+    {   
+        
+    }
 }

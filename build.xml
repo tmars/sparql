@@ -51,6 +51,7 @@
                 <pathelement location="${bin.dir}" />
             </classpath>
             <arg value="${query.sparql}" />
+            <arg value="${query.rdf}" />
         </java>
         <echo>exec query ${result.sparql} finished</echo> 
     </target>
