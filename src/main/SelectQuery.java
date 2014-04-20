@@ -56,7 +56,7 @@ public class SelectQuery extends SparqlQuery {
                                                                        
         TextTable tt = new TextTable(columnNames, data);         
         // this adds the numbering on the left      
-        // tt.setAddRowNumbering(true);      
+         tt.setAddRowNumbering(true);      
         // sort by the first column                              
         //tt.setSort(0);                                                 
         tt.printTable();                                 

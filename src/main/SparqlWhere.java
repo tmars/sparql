@@ -11,6 +11,18 @@ public class SparqlWhere
             super(s, st, p, pt, o, ot);
             isOptional = isOpt;
         }
+        
+        public List<String> getVars()
+        {
+            List<String> res = new ArrayList<>();
+            if (subjectType.equals("var"))
+                res.add(subject);
+            if (predicateType.equals("var"))
+                res.add(predicate);
+            if (objectType.equals("var"))
+                res.add(object);
+            return res;
+        }
     }
     private class Filter
     {
@@ -81,12 +93,17 @@ public class SparqlWhere
         else 
         {
             System.out.println("\ttriples:");
-            for (Triplet t : triplets) 
-                System.out.println("\t\t" +
+            for (WhereTriplet t : triplets) 
+            {
+                System.out.print("\t\t" +
                     t.subject + " (" + t.subjectType+ ") " +
                     t.predicate + " (" + t.predicateType+ ") " +
                     t.object + " (" + t.objectType+ ")"
                 );
+                if (t.isOptional)
+                    System.out.print(" [OPTIONAL]");
+                System.out.println();
+            }
         }
         if (filters.isEmpty()) 
         {

@@ -85,11 +85,17 @@ public abstract class SparqlQuery {
         Model model = ModelFactory.createDefaultModel();
         model.read(filename);
         
+        // индексы попавших в результат
+        Set<Integer> activeIndexes = new HashSet<Integer>();
+            
         List<Hashtable<String, String>> prevResults = null;
+        List<Hashtable<String, String>> curResults = null;
+        
         // делаем отборы по всем триплетам условия выборки
         for (SparqlWhere.WhereTriplet whereTrp : where.triplets) 
         {
-            List<Hashtable<String, String>> curResults = new ArrayList<>();
+            activeIndexes.clear();
+            curResults = new ArrayList<>();
         
             whereTrp.subject = getVarTermIRI(whereTrp.subject, whereTrp.subjectType);
             whereTrp.predicate = getVarTermIRI(whereTrp.predicate, whereTrp.predicateType);
@@ -97,62 +103,43 @@ public abstract class SparqlQuery {
         
             // список утверждений в Модели
             StmtIterator iter = model.listStatements();
-         
-            // вывод предиката, субъекта и объекта каждого утверждения
             while (iter.hasNext()) 
             {
                 Hashtable<String, String> curRes = new Hashtable<String, String>();
                 Triplet dataTrp = getTripletFromStatement(iter.nextStatement());
                
-                boolean flag = true;
-                
                 // subject
                 if (whereTrp.subjectType.equals("var")) 
-                {
                     curRes.put(whereTrp.subject, dataTrp.subject);
-                } 
-                else 
-                {
-                    if (!whereTrp.subject.equals(dataTrp.subject))
-                        flag = false;
-                }
+                else if (!whereTrp.subject.equals(dataTrp.subject))
+                    continue; // next statemment
                 
                 // predicate
                 if (whereTrp.predicateType.equals("var")) 
-                {
                     curRes.put(whereTrp.predicate, dataTrp.predicate);
-                } 
-                else 
-                {
-                    if (!whereTrp.predicate.equals(dataTrp.predicate))
-                        flag = false;
-                }
+                else if (!whereTrp.predicate.equals(dataTrp.predicate))
+                    continue; // next statemment
                 
                 // object
                 if (whereTrp.objectType.equals("var")) 
-                {
                     curRes.put(whereTrp.object, dataTrp.object);
-                } 
-                else 
-                {
-                    if (!whereTrp.object.equals(dataTrp.object))
-                        flag = false;
-                }
-              
+                else if (!whereTrp.object.equals(dataTrp.object))
+                    continue; // next statemment
+                
                 // Ищем соответствие с предыдущими результатами
                 if (prevResults != null) 
                 {
                     boolean isFinded = false;
                     // Просматриваем предыдущие результаты
-                    for (Hashtable<String, String> prevRes: prevResults) 
+                    for (int i = 0; i < prevResults.size(); i++)
                     {
                         // Определяем соответсвия по переменным и значениям
-                        Set<String> intersection = new HashSet<String>(prevRes.keySet());
+                        Set<String> intersection = new HashSet<String>(prevResults.get(i).keySet());
                         intersection.retainAll(curRes.keySet());
                         boolean isEquals = true;
                         for (String v : intersection) 
                         {
-                            if (!curRes.get(v).equals(prevRes.get(v))) 
+                            if (!curRes.get(v).equals(prevResults.get(i).get(v))) 
                             {
                                 isEquals = false;
                                 break;
@@ -162,22 +149,31 @@ public abstract class SparqlQuery {
                         if (isEquals) 
                         {
                             // Добавляем недостоющие значения переменных
-                            for (String v : prevRes.keySet()) 
-                            {
-                                curRes.put(v, prevRes.get(v));
-                            }
+                            for (String v : prevResults.get(i).keySet()) 
+                                curRes.put(v, prevResults.get(i).get(v));
                             isFinded = true;
+                            activeIndexes.add(i);
                             break;
                         }
                     } 
                     if (!isFinded)
-                        flag = false;
-                }
+                        continue; // next statemment
+                } 
                 
-                // Добавляем результат к текущему отбору
-                if (flag) 
+                curResults.add(curRes);
+            }
+            // Если опциональное условие то 
+            // добавляем не попавшие предыдущие в текущие
+            if (whereTrp.isOptional)
+            {
+                List<String> vars = whereTrp.getVars();
+                // По всем предыдущим результатам не соответствующим текущим
+                for (int i = 0; i < prevResults.size(); i++) if (!activeIndexes.contains(i)) 
                 {
-                    curResults.add(curRes);
+                    // Добавляем результат к текущему
+                    for (String v : vars) if (!prevResults.get(i).containsKey(v))
+                        prevResults.get(i).put(v, "[NONE]");
+                    curResults.add(prevResults.get(i));
                 }
             }
             prevResults = curResults;
