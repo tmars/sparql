@@ -1,9 +1,4 @@
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Hashtable;
-import java.util.Comparator;
-import java.util.Collections;
-import java.util.Enumeration;
+import java.util.*;
 
 class SparqlOrder
 {
@@ -21,15 +16,16 @@ class SparqlOrder
         @Override
         public int compare(Hashtable<String, String> o1, Hashtable<String, String> o2) 
         {
-            // fixme: порядок заполнения переменных не соответствует запросу
             int diff = 0;
-            Enumeration en = order.vars.keys();
-            while (diff == 0 && en.hasMoreElements())
+            List<Object> keys = Arrays.asList(order.vars.keySet().toArray());
+            Collections.reverse(keys);
+            for (Object key : keys)
             {
-                String key = en.nextElement().toString();
                 diff = o1.get(key).compareTo(o2.get(key));
                 if (order.vars.get(key) == Sort.DESC)
                     diff = -diff;
+                if (diff != 0)
+                    break;
             }
             return diff;
         }
@@ -60,7 +56,9 @@ class SparqlOrder
         else
         {
             System.out.println("\tvars:");
-            for (String v : vars.keySet())
+            List<Object> keys = Arrays.asList(vars.keySet().toArray());
+            Collections.reverse(keys);
+            for (Object v : keys)
                 System.out.println("\t\t" + v + ": "+vars.get(v));
         }
     }
