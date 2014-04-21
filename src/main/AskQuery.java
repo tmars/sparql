@@ -1,5 +1,4 @@
-import java.util.List;
-import java.util.Hashtable;
+import java.util.*;
 import dnl.utils.text.table.TextTable;
 
 public class AskQuery extends SparqlQuery {

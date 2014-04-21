@@ -1,15 +1,5 @@
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.Set;
-import java.util.HashSet;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.rdf.model.Property;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.StmtIterator;
-import com.hp.hpl.jena.rdf.model.RDFNode;
-import com.hp.hpl.jena.rdf.model.Statement;
+import java.util.*;
+import com.hp.hpl.jena.rdf.model.*;
 
 public abstract class SparqlQuery {
     String dataset = "";
@@ -92,103 +82,13 @@ public abstract class SparqlQuery {
         Model model = ModelFactory.createDefaultModel();
         model.read(filename);
         
-        // индексы попавших в результат
-        Set<Integer> activeIndexes = new HashSet<Integer>();
-            
-        List<Hashtable<String, String>> prevResults = null;
-        List<Hashtable<String, String>> curResults = null;
+        List<Hashtable<String, String>> results = where.fetch(model, this);
         
-        // делаем отборы по всем триплетам условия выборки
-        for (SparqlWhere.WhereTriplet whereTrp : where.triplets) 
-        {
-            activeIndexes.clear();
-            curResults = new ArrayList<>();
+        results = order.sort(results);
+        results = makeOffset(results);
+        results = makeLimit(results);
         
-            whereTrp.subject = getVarTermIRI(whereTrp.subject, whereTrp.subjectType);
-            whereTrp.predicate = getVarTermIRI(whereTrp.predicate, whereTrp.predicateType);
-            whereTrp.object = getVarTermIRI(whereTrp.object, whereTrp.objectType);
-        
-            // список утверждений в Модели
-            StmtIterator iter = model.listStatements();
-            while (iter.hasNext()) 
-            {
-                Hashtable<String, String> curRes = new Hashtable<String, String>();
-                Triplet dataTrp = getTripletFromStatement(iter.nextStatement());
-               
-                // subject
-                if (whereTrp.subjectType.equals("var")) 
-                    curRes.put(whereTrp.subject, dataTrp.subject);
-                else if (!whereTrp.subject.equals(dataTrp.subject))
-                    continue; // next statemment
-                
-                // predicate
-                if (whereTrp.predicateType.equals("var")) 
-                    curRes.put(whereTrp.predicate, dataTrp.predicate);
-                else if (!whereTrp.predicate.equals(dataTrp.predicate))
-                    continue; // next statemment
-                
-                // object
-                if (whereTrp.objectType.equals("var")) 
-                    curRes.put(whereTrp.object, dataTrp.object);
-                else if (!whereTrp.object.equals(dataTrp.object))
-                    continue; // next statemment
-                
-                // Ищем соответствие с предыдущими результатами
-                if (prevResults != null) 
-                {
-                    boolean isFinded = false;
-                    // Просматриваем предыдущие результаты
-                    for (int i = 0; i < prevResults.size(); i++)
-                    {
-                        // Определяем соответсвия по переменным и значениям
-                        Set<String> intersection = new HashSet<String>(prevResults.get(i).keySet());
-                        intersection.retainAll(curRes.keySet());
-                        boolean isEquals = true;
-                        for (String v : intersection) 
-                        {
-                            if (!curRes.get(v).equals(prevResults.get(i).get(v))) 
-                            {
-                                isEquals = false;
-                                break;
-                            }
-                        }
-                        // Найден пересекающийся по переменным и значениям результат
-                        if (isEquals) 
-                        {
-                            // Добавляем недостоющие значения переменных
-                            for (String v : prevResults.get(i).keySet()) 
-                                curRes.put(v, prevResults.get(i).get(v));
-                            isFinded = true;
-                            activeIndexes.add(i);
-                            break;
-                        }
-                    } 
-                    if (!isFinded)
-                        continue; // next statemment
-                } 
-                
-                curResults.add(curRes);
-            }
-            // Если опциональное условие то 
-            // добавляем не попавшие предыдущие в текущие
-            if (whereTrp.isOptional)
-            {
-                List<String> vars = whereTrp.getVars();
-                // По всем предыдущим результатам не соответствующим текущим
-                for (int i = 0; i < prevResults.size(); i++) if (!activeIndexes.contains(i)) 
-                {
-                    // Добавляем результат к текущему
-                    for (String v : vars) if (!prevResults.get(i).containsKey(v))
-                        prevResults.get(i).put(v, "[NONE]");
-                    curResults.add(prevResults.get(i));
-                }
-            }
-            prevResults = curResults;
-        }
-        prevResults = order.sort(prevResults);
-        prevResults = makeOffset(prevResults);
-        prevResults = makeLimit(prevResults);
-        execute(prevResults);
+        execute(results);
     }
     
     private List<Hashtable<String, String>> makeOffset(List<Hashtable<String, String>> results)
@@ -217,21 +117,7 @@ public abstract class SparqlQuery {
         return results;
     }
     
-    private Triplet getTripletFromStatement(Statement stmt)
-    {
-        String s = stmt.getSubject().toString();     // получить субъект
-        String p = stmt.getPredicate().toString();   // получить предикат
-        String o;
-        RDFNode to = stmt.getObject();      // получить объект
-        if (to instanceof Resource) 
-           o = to.toString();
-        else // объект - литерал
-            o = "\"" + to.toString() + "\"";
-            
-        return new Triplet(s, p, o);
-    }
-    
-    private String getVarTermIRI(String value, String type)
+    public String getVarTermIRI(String value, String type)
     {
         String r = "";
         if (type.equals("short_iri"))

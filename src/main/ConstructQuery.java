@@ -1,5 +1,4 @@
-import java.util.List;
-import java.util.Hashtable;
+import java.util.*;
 
 public class ConstructQuery extends SparqlQuery {
     public ConstructQuery(List<String> bs, Hashtable<String, String> ps)

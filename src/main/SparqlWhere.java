@@ -1,5 +1,8 @@
-import java.util.List;
-import java.util.ArrayList;
+import java.util.*;
+import org.antlr.runtime.*;
+import org.antlr.runtime.tree.*;
+import org.antlr.stringtemplate.*;
+import com.hp.hpl.jena.rdf.model.*;
 
 public class SparqlWhere 
 {
@@ -24,17 +27,6 @@ public class SparqlWhere
             return res;
         }
     }
-    private class Filter
-    {
-        private String type;
-        private String value;
-        
-        public Filter(String v, String t)
-        {
-            value = v;
-            type = t;
-        }
-    }
     
     String curSubject = "";
     String curSubjectType = "";
@@ -43,7 +35,7 @@ public class SparqlWhere
     boolean isOptional = false;
     
     List<WhereTriplet> triplets = new ArrayList<>();
-    List<Filter> filters = new ArrayList<>();
+    List<CommonTree> filters = new ArrayList<>();
     
     public void start(String v, String t)
     {
@@ -77,10 +69,151 @@ public class SparqlWhere
     {
     }
     
-    public void addFilter(String v, String t)
+    public void addFilter(Object t)
     {
-        Filter f = new Filter(v, t);
-	    filters.add(f);
+        filters.add((CommonTree)t);
+    }
+    
+    private Triplet getTripletFromStatement(Statement stmt)
+    {
+        String s = stmt.getSubject().toString();     // получить субъект
+        String p = stmt.getPredicate().toString();   // получить предикат
+        String o;
+        RDFNode to = stmt.getObject();      // получить объект
+        if (to instanceof Resource) 
+           o = to.toString();
+        else // объект - литерал
+            o = "\"" + to.toString() + "\"";
+            
+        return new Triplet(s, p, o);
+    }
+    
+    public List<Hashtable<String, String>> fetch(Model model, SparqlQuery query)
+    {   
+        // индексы попавших в результат
+        Set<Integer> activeIndexes = new HashSet<Integer>();
+            
+        List<Hashtable<String, String>> prevResults = null;
+        List<Hashtable<String, String>> curResults = null;
+        
+        // делаем отборы по всем триплетам условия выборки
+        for (SparqlWhere.WhereTriplet whereTrp : triplets) 
+        {
+            activeIndexes.clear();
+            curResults = new ArrayList<>();
+        
+            whereTrp.subject = query.getVarTermIRI(whereTrp.subject, whereTrp.subjectType);
+            whereTrp.predicate = query.getVarTermIRI(whereTrp.predicate, whereTrp.predicateType);
+            whereTrp.object = query.getVarTermIRI(whereTrp.object, whereTrp.objectType);
+        
+            // список утверждений в Модели
+            StmtIterator iter = model.listStatements();
+            while (iter.hasNext()) 
+            {
+                Hashtable<String, String> curRes = new Hashtable<String, String>();
+                Triplet dataTrp = getTripletFromStatement(iter.nextStatement());
+               
+                // subject
+                if (whereTrp.subjectType.equals("var")) 
+                    curRes.put(whereTrp.subject, dataTrp.subject);
+                else if (!whereTrp.subject.equals(dataTrp.subject))
+                    continue; // next statemment
+                
+                // predicate
+                if (whereTrp.predicateType.equals("var")) 
+                    curRes.put(whereTrp.predicate, dataTrp.predicate);
+                else if (!whereTrp.predicate.equals(dataTrp.predicate))
+                    continue; // next statemment
+                
+                // object
+                if (whereTrp.objectType.equals("var")) 
+                    curRes.put(whereTrp.object, dataTrp.object);
+                else if (!whereTrp.object.equals(dataTrp.object))
+                    continue; // next statemment
+                
+                // Ищем соответствие с предыдущими результатами
+                if (prevResults != null) 
+                {
+                    boolean isFinded = false;
+                    // Просматриваем предыдущие результаты
+                    for (int i = 0; i < prevResults.size(); i++)
+                    {
+                        // Определяем соответсвия по переменным и значениям
+                        Set<String> intersection = new HashSet<String>(prevResults.get(i).keySet());
+                        intersection.retainAll(curRes.keySet());
+                        boolean isEquals = true;
+                        for (String v : intersection) 
+                        {
+                            if (!curRes.get(v).equals(prevResults.get(i).get(v))) 
+                            {
+                                isEquals = false;
+                                break;
+                            }
+                        }
+                        // Найден пересекающийся по переменным и значениям результат
+                        if (isEquals) 
+                        {
+                            // Добавляем недостоющие значения переменных
+                            for (String v : prevResults.get(i).keySet()) 
+                                curRes.put(v, prevResults.get(i).get(v));
+                            isFinded = true;
+                            activeIndexes.add(i);
+                            break;
+                        }
+                    } 
+                    if (!isFinded)
+                        continue; // next statemment
+                } 
+                
+                curResults.add(curRes);
+            }
+            // Если опциональное условие то 
+            // добавляем не попавшие предыдущие в текущие
+            if (whereTrp.isOptional)
+            {
+                List<String> vars = whereTrp.getVars();
+                // По всем предыдущим результатам не соответствующим текущим
+                for (int i = 0; i < prevResults.size(); i++) if (!activeIndexes.contains(i)) 
+                {
+                    // Добавляем результат к текущему
+                    for (String v : vars) if (!prevResults.get(i).containsKey(v))
+                        prevResults.get(i).put(v, "[NONE]");
+                    curResults.add(prevResults.get(i));
+                }
+            }
+            prevResults = curResults;
+        }
+
+        // debug filter
+        /*for (int j = 0; j < filters.size(); j++)
+        {
+            SparqlExpression expr = new SparqlExpression();
+            for (int i = 0; i < prevResults.size(); i++) 
+            {
+                expr.setVars(prevResults.get(i));
+                Object result = expr.exec(filters.get(j));
+                prevResults.get(i).put(
+                    "FILTER:"+Integer.toString(j), 
+                    result.toString()
+                );
+            }
+        }*/
+        
+        // Фильтруем
+        for (int j = 0; j < filters.size(); j++)
+        {
+            curResults = new ArrayList();
+            SparqlExpression expr = new SparqlExpression();
+            for (int i = 0; i < prevResults.size(); i++) 
+            {
+                expr.setVars(prevResults.get(i));
+                Object result = expr.exec(filters.get(j));
+                if (result instanceof Boolean && result == true)
+                    curResults.add(prevResults.get(i));
+            }
+            prevResults = curResults;
+        }
+        return prevResults;
     }
     
     public void info()
@@ -112,8 +245,13 @@ public class SparqlWhere
         else 
         {
             System.out.println("\tfilters:");
-            for (Filter f : filters) 
-                System.out.println("\t\t" + f.value + " (" + f.type+ ") ");
+            for (CommonTree f : filters) 
+            {
+                System.out.println("\t\t" + f.toStringTree());
+                DOTTreeGenerator gen = new DOTTreeGenerator();
+                StringTemplate st = gen.toDOT(f);
+                System.out.println(st);
+            }
         }
     }
 }

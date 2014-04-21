@@ -1,7 +1,7 @@
 grammar Sparql;
 
 options {
-    k=1;
+    output=AST; 
 }
 
 @header{
@@ -36,15 +36,15 @@ prologue
     ;
 
 baseDecl
-    : 'BASE' R=IRI_REF {bases.add($R.text.substring(1, $R.text.length()-1));}
+    : 'BASE'^ R=IRI_REF {bases.add($R.text.substring(1, $R.text.length()-1));}
     ;
 
 prefixDecl
-    : 'PREFIX' P=PNAME_NS R=IRI_REF {prefixes.put($P.text, $R.text.substring(1, $R.text.length()-1));}
+    : 'PREFIX'^ P=PNAME_NS R=IRI_REF {prefixes.put($P.text, $R.text.substring(1, $R.text.length()-1));}
     ;
 
 selectQuery
-    : 'SELECT' {query = new SelectQuery(bases, prefixes);} 
+    : 'SELECT'^ {query = new SelectQuery(bases, prefixes);} 
         ( 'DISTINCT' {sq().setIsDistinct(true);})? 
         ( (var {sq().addField($var.text);})+ 
         | '*' {sq().setAllFields(true);}
@@ -53,22 +53,22 @@ selectQuery
     ;
 
 constructQuery
-    : 'CONSTRUCT' {query = new ConstructQuery(bases, prefixes);} 
+    : 'CONSTRUCT'^ {query = new ConstructQuery(bases, prefixes);} 
         constructTemplate datasetClause* whereClause solutionModifier
     ;
 
 describeQuery
-    : 'DESCRIBE' {query = new DescribeQuery(bases, prefixes);} 
+    : 'DESCRIBE'^ {query = new DescribeQuery(bases, prefixes);} 
         ( varOrIRIref+ | '*' ) datasetClause* whereClause? solutionModifier 
     ;
 
 askQuery
-    : 'ASK' {query = new AskQuery(bases, prefixes);}
+    : 'ASK'^ {query = new AskQuery(bases, prefixes);}
         datasetClause* whereClause 
     ;
 
 datasetClause
-    : 'FROM' ( defaultGraphClause | namedGraphClause )
+    : 'FROM'^ ( defaultGraphClause | namedGraphClause )
     ;
 
 defaultGraphClause
@@ -84,7 +84,7 @@ sourceSelector
     ;
 
 whereClause
-    : 'WHERE'? groupGraphPattern 
+    : 'WHERE'^? groupGraphPattern 
     ;
 
 solutionModifier
@@ -96,7 +96,7 @@ limitOffsetClauses
     ;
 
 orderClause
-    : 'ORDER' 'BY' orderCondition+
+    : 'ORDER'^ 'BY' orderCondition+ 
     ;
 
 orderCondition
@@ -115,7 +115,7 @@ offsetClause
     ;
 
 groupGraphPattern
-    : '{' triplesBlock? ( ( graphPatternNotTriples | filter ) '.'? triplesBlock? )* '}'
+    : '{'! triplesBlock? ( ( graphPatternNotTriples | filter ) '.'? triplesBlock? )* '}'!
     ;
 
 triplesBlock
@@ -135,17 +135,17 @@ graphGraphPattern
     ;
 
 groupOrUnionGraphPattern
-    : groupGraphPattern ( 'UNION' groupGraphPattern )*
+    : groupGraphPattern ( 'UNION'^ groupGraphPattern )*
     ;
 
 filter
-    : 'FILTER' constraint 
+    : 'FILTER'^ c=constraint {query.getWhere().addFilter($c.tree);} 
     ;
 
 constraint
-    : v=brackettedExpression {query.getWhere().addFilter($v.value, "expr");} 
-    | builtInCall 
-    | functionCall
+    : v=brackettedExpression 
+    | b=builtInCall 
+    | e=functionCall 
     ;
 
 functionCall
@@ -153,15 +153,15 @@ functionCall
     ;
 
 argList
-    : ( NIL | '(' expression ( ',' expression )* ')' )
+    : ( NIL | '('! expression ( ','^ expression )* ')'! )
     ;
 
 constructTemplate
-    : '{' constructTriples? '}'
+    : '{'! constructTriples? '}'!
     ;
 
 constructTriples
-    : triplesSameSubject ( '.' constructTriples? )?
+    : triplesSameSubject ( '.'^ constructTriples? )?
     ;
 
 triplesSameSubject
@@ -200,11 +200,11 @@ triplesNode
     ;
 
 blankNodePropertyList
-    : '[' propertyListNotEmpty ']'
+    : '['! propertyListNotEmpty ']'!
     ;
 
 collection
-    : '(' graphNode+ ')'
+    : '('! graphNode+ ')'!
     ;
 
 graphNode returns [String type, String value]
@@ -241,11 +241,11 @@ expression
     ;
 
 conditionalOrExpression
-    : conditionalAndExpression ( '||' conditionalAndExpression )*
+    : conditionalAndExpression ( '||'^ conditionalAndExpression )*
     ;
 
 conditionalAndExpression
-    : valueLogical ( '&&' valueLogical )*
+    : valueLogical ( '&&'^ valueLogical )*
     ;
 
 valueLogical
@@ -253,7 +253,7 @@ valueLogical
     ;
 
 relationalExpression
-    : numericExpression ( '=' numericExpression | '!=' numericExpression | '<' numericExpression | '>' numericExpression | '<=' numericExpression | '>=' numericExpression )?
+    : numericExpression ( '='^ numericExpression | '!='^ numericExpression | '<'^ numericExpression | '>'^ numericExpression | '<='^ numericExpression | '>='^ numericExpression )?
     ;
 
 numericExpression
@@ -261,17 +261,17 @@ numericExpression
     ;
 
 additiveExpression
-    : multiplicativeExpression ( '+' multiplicativeExpression | '-' multiplicativeExpression | numericLiteralPositive | numericLiteralNegative )*
+    : multiplicativeExpression ( '+'^ multiplicativeExpression | '-'^ multiplicativeExpression | numericLiteralPositive | numericLiteralNegative )*
     ;
 
 multiplicativeExpression
-    : unaryExpression ( '*' unaryExpression | '/' unaryExpression )*
+    : unaryExpression ( '*'^ unaryExpression | '/'^ unaryExpression )*
     ;
 
 unaryExpression
-    :  '!' primaryExpression
-    | '+' primaryExpression
-    | '-' primaryExpression
+    :  '!'^ primaryExpression
+    | '+'^ primaryExpression
+    | '-'^ primaryExpression
     | primaryExpression
     ;
 
@@ -280,25 +280,21 @@ primaryExpression
     ;
 
 brackettedExpression returns [String value]
-    : '(' e=expression ')' {$value = $e.text;}
+    : '('! e=expression ')'! {$value = $e.text;}
     ;
 
 builtInCall
-    : 'STR' '(' expression ')'
-    | 'LANG' '(' expression ')'
-    | 'LANGMATCHES' '(' expression ',' expression ')'
-    | 'DATATYPE' '(' expression ')'
-    | 'BOUND' '(' var ')'
-    | 'sameTerm' '(' expression ',' expression ')'
-    | 'isIRI' '(' expression ')'
-    | 'isURI' '(' expression ')'
-    | 'isBLANK' '(' expression ')'
-    | 'isLITERAL' '(' expression ')'
-    | regexExpression
-    ;
-
-regexExpression
-    : 'REGEX' '(' expression ',' expression ( ',' expression )? ')'
+    : 'STR'^ '('! expression ')'!
+    | 'LANG'^ '('! expression ')'!
+    | 'LANGMATCHES'^ '('! expression ','^ expression ')'!
+    | 'DATATYPE'^ '('! expression ')'!
+    | 'BOUND'^ '('! var ')'!
+    | 'sameTerm'^ '('! expression ','^ expression ')'!
+    | 'isIRI'^ '('! expression ')'!
+    | 'isURI'^ '('! expression ')'!
+    | 'isBLANK'^ '('! expression ')'!
+    | 'isLITERAL'^ '('! expression ')'!
+    | 'REGEX'^ '('! expression ','^ expression ( ','^ expression )? ')'!
     ;
 
 iriRefOrFunction
