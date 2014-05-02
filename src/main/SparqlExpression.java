@@ -12,82 +12,50 @@ class SparqlExpression
         vars = vs;
     }
     
-    private Object compare(Object a, Object b)
+    private Integer compare(Object a, Object b)
     {
-        Object diff = null;
+        Integer diff = null;
         //System.out.println("----------------");
         //System.out.println(a.toString() + " : " + a.getClass().getCanonicalName());
         //System.out.println(b.toString() + " : " + b.getClass().getCanonicalName());
-        if (a instanceof Integer)
+        if (a instanceof Integer || a instanceof Double)
         {
-            Integer aval = (Integer)a;
+            Number aval = (Number)a;
+            Number bval = null;
+            
             if (b instanceof String)
             {
-                String bval = (String)b;
                 try 
                 {
-                    diff = aval - Double.parseDouble(bval);
-                    diff = aval - Integer.parseInt(bval);
+                    bval = Double.parseDouble((String)b);
                 }
                 catch (Exception e1)
                 {
                 }
             }
-            else if (b instanceof Integer)
+            else if (b instanceof Integer || b instanceof Double)
             {
-                diff = aval - (Integer)b;
+                bval = (Number)b;
             }
-            else if (b instanceof Double)
+            
+            if (bval != null)
             {
-                diff = aval - (Double)b;
-            }
-        }
-        else if (a instanceof Double)
-        {
-            Double aval = (Double)a;
-            if (b instanceof String)
-            {
-                String bval = (String)b;
-                try 
-                {
-                    diff = aval - Double.parseDouble(bval);
-                    diff = aval - Integer.parseInt(bval);
-                }
-                catch (Exception e1)
-                {
-                }
-            }
-            else if (b instanceof Double || b instanceof Integer)
-            {
-                diff = aval - (Double)b;
-            }
-            else if (b instanceof Integer)
-            {
-                diff = aval - (Integer)b;
+                if (aval.doubleValue() > bval.doubleValue()) diff = 1;
+                else if (aval.doubleValue() < bval.doubleValue()) diff = -1;
+                else diff = 0;
             }
         }
         else if (a instanceof String)
         {
-            String aval = (String)a;
-            if (b instanceof Double)
+            if (b instanceof Double || b instanceof Integer)
             {
-                Double bval = (Double)b;
+                Number bval = (Number)b;
                 try 
                 {
-                    diff = Double.parseDouble(aval) - bval;
-                    diff = Integer.parseInt(aval) - bval;
-                }
-                catch (Exception e)
-                {
-                }
-            }
-            else if (b instanceof Integer)
-            {
-                Integer bval = (Integer)b;
-                try 
-                {
-                    diff = Double.parseDouble(aval) - bval;
-                    diff = Integer.parseInt(aval) - bval;
+                    Number aval = Double.parseDouble((String)a);
+                    if (aval.doubleValue() > bval.doubleValue()) diff = 1;
+                    else if (aval.doubleValue() < bval.doubleValue()) diff = -1;
+                    else diff = 0;
                 }
                 catch (Exception e)
                 {
@@ -98,7 +66,7 @@ class SparqlExpression
                 Boolean bval = (Boolean)b;
                 try 
                 {
-                    if (Boolean.parseBoolean(aval) == bval)
+                    if (Boolean.parseBoolean((String)a) == bval)
                         diff = 0;
                 }
                 catch (Exception e)
@@ -106,7 +74,7 @@ class SparqlExpression
                 }
             }
             else if (b instanceof String)
-                diff = aval.compareTo((String)b);
+                diff = ((String)a).compareTo((String)b);
         }
         else if (a instanceof Boolean)
         {
@@ -135,8 +103,6 @@ class SparqlExpression
     
     private Double toNumber(Object a)
     {
-        return 0.0;
-        /*
         Double res = 0.0;
         if (a instanceof String)
         {
@@ -166,7 +132,7 @@ class SparqlExpression
             res = 0.0;
         }
         
-        return res;*/
+        return res;
     }
     
     public Object exec(CommonTree root)
@@ -243,7 +209,7 @@ class SparqlExpression
                 }
                 else 
                 {
-                    Integer r = (Integer)compare(lval, rval);
+                    Integer r = compare(lval, rval);
                     if (r == null) 
                         res = false;
                     
@@ -280,6 +246,18 @@ class SparqlExpression
                 // +
                 if (text.equals("+"))
                     res = lval + rval;
+                
+                // -
+                else if (text.equals("-"))
+                    res = lval - rval;
+                    
+                // *
+                else if (text.equals("*"))
+                    res = lval * rval;
+                    
+                // /
+                else if (text.equals("/"))
+                    res = lval / rval;
             }
         }
         return res;
