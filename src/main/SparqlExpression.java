@@ -148,50 +148,80 @@ class SparqlExpression
         // UNO
         else if (root.getChildCount() == 1)
         {
-            String nval = ((CommonTree)root.getChild(0)).getText();
-            // VAR 
-            if (text.equals("VAR_RT"))
+            String[] rootOperators = {"VAR_RT", "STRING_RT", "BOOL_RT", 
+                "INTEGER_RT", "FLOAT_RT", "DOUBLE_RT", "CALL_RT"};
+            String[] unaryOperators = {"!", "+", "-"};
+            
+            if (Arrays.asList(rootOperators).contains(text))
             {
-                if (vars.containsKey(nval))
-                    res = vars.get(nval);
-                else
-                    res = null;
-                // todo: exception 
+                String nval = ((CommonTree)root.getChild(0)).getText();
+                // VAR 
+                if (text.equals("VAR_RT"))
+                {
+                    if (vars.containsKey(nval))
+                        res = vars.get(nval);
+                    else
+                        res = null;
+                    // todo: exception 
+                }
+                // STRING
+                else if (text.equals("STRING_RT"))
+                {
+                    // литерал преобразуем в двойные кавычки
+                    res = nval.substring(1, nval.length()-1);
+                }
+                // BOOL
+                else if (text.equals("BOOL_RT"))
+                {
+                    res = Boolean.parseBoolean(nval);
+                }
+                // INTEGER
+                else if (text.equals("INTEGER_RT"))
+                {
+                    res = Integer.parseInt(nval);
+                }
+                // DECIMAL
+                else if (text.equals("FLOAT_RT"))
+                {
+                    res = Double.parseDouble(nval);
+                }
+                // DOUBLE
+                else if (text.equals("DOUBLE_RT"))
+                {
+                    res = Double.parseDouble(nval);
+                }
+                // CALL
+                else if (text.equals("CALL_RT"))
+                {
+                    CommonTree node = (CommonTree)root.getChild(0);
+                    List<Object> args = new ArrayList();
+                    for (int i = 0; i < node.getChildCount(); i++)
+                        args.add(exec((CommonTree)node.getChild(i)));
+                    res = BuildInCall.exec(nval, args);
+                }
             }
-            // STRING
-            else if (text.equals("STRING_RT"))
+            if (Arrays.asList(unaryOperators).contains(text))
             {
-                // литерал преобразуем в двойные кавычки
-                res = nval.substring(1, nval.length()-1);
-            }
-            // BOOL
-            else if (text.equals("BOOL_RT"))
-            {
-                res = Boolean.parseBoolean(nval);
-            }
-            // INTEGER
-            else if (text.equals("INTEGER_RT"))
-            {
-                res = Integer.parseInt(nval);
-            }
-            // DECIMAL
-            else if (text.equals("FLOAT_RT"))
-            {
-                res = Double.parseDouble(nval);
-            }
-            // DOUBLE
-            else if (text.equals("DOUBLE_RT"))
-            {
-                res = Double.parseDouble(nval);
-            }
-            // CALL
-            else if (text.equals("CALL_RT"))
-            {
-                CommonTree node = (CommonTree)root.getChild(0);
-                List<Object> args = new ArrayList();
-                for (int i = 0; i < node.getChildCount(); i++)
-                    args.add(exec((CommonTree)node.getChild(i)));
-                res = BuildInCall.exec(nval, args);
+                Object nval = exec((CommonTree)root.getChild(0));
+                // !
+                if (text.equals("!") && nval instanceof Boolean)
+                {
+                    res = !((Boolean)nval);
+                }
+                // +
+                else if (text.equals("+") && nval instanceof Number)
+                {
+                    if (((Number)nval).doubleValue() > 0)
+                        res = (Number)nval;
+                    else
+                        res = 0.0 - ((Number)nval).doubleValue();
+                        
+                }
+                // -
+                else if (text.equals("-") && nval instanceof Number)
+                {
+                    res = 0.0 - ((Number)nval).doubleValue();
+                }
             }
         }
         // BIN
