@@ -1,5 +1,7 @@
 import java.util.*;
 import java.lang.reflect.Method;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 class BuildInCall
 {
@@ -129,8 +131,10 @@ class BuildInCall
 		if (args.size() != 1) return null;
 		
 		//  TODO
+    String text = args.get(0).toString();
+    Boolean result = text.matches("'<' ([^<>\"{}|^`\\]-[#x00-#x20])* '>'");
 		
-		return true;
+		return result;
 	}
 
 	public static Object isURI(List<Object> args)
@@ -159,20 +163,55 @@ class BuildInCall
 		return !result;
 	}
 
-	
+
 	//  http://www.w3.org/TR/sparql11-query/#func-regex
 	//  http://www.w3.org/TR/xpath-functions/#regex-syntax
 	public static Object REGEX(String text, String pattern)
 	{
 		//  TODO
-		return true;
+    Boolean result = text.matches(pattern);
+    
+		return result;
 	}
 		
 	
 	public static Object REGEX(String text, String pattern, String flags)
 	{
-		//  TODO
-		return false;
+		//  s  Pattern.DOTALL
+    //  m  Pattern.MULTILINE
+    //  i  Pattern.CASE_INSENSITIVE
+    //  x  Pattern.COMMENTS
+    
+    if (flags.contains("s"))
+    {
+      Pattern p = Pattern.compile(pattern, Pattern.DOTALL);
+      Matcher m = p.matcher(text);
+      Boolean result = m.matches();
+      return result;
+    }
+    else if (flags.contains("m"))
+    {
+      Pattern p = Pattern.compile(pattern, Pattern.MULTILINE);
+      Matcher m = p.matcher(text);
+      Boolean result = m.matches();
+      return result;
+    }
+    else if (flags.contains("i"))
+    {
+      Pattern p = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE);
+      Matcher m = p.matcher(text);
+      Boolean result = m.matches();
+      return result;
+    }
+    else if (flags.contains("x"))
+    {
+      Pattern p = Pattern.compile(pattern, Pattern.COMMENTS);
+      Matcher m = p.matcher(text);
+      Boolean result = m.matches();
+      return result;
+    }
+    
+		return REGEX(text, pattern);
 	}
 	
 	
