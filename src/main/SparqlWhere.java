@@ -83,18 +83,18 @@ public class SparqlWhere
         if (to instanceof Resource) 
            o = to.toString();
         else // объект - литерал
-            o = "\"" + to.toString() + "\"";
+            o = to.toString();
             
         return new Triplet(s, p, o);
     }
     
-    public List<Hashtable<String, String>> fetch(Model model, SparqlQuery query)
+    public List<Hashtable<String, Object>> fetch(Model model, SparqlQuery query)
     {   
         // индексы попавших в результат
         Set<Integer> activeIndexes = new HashSet<Integer>();
             
-        List<Hashtable<String, String>> prevResults = null;
-        List<Hashtable<String, String>> curResults = null;
+        List<Hashtable<String, Object>> prevResults = null;
+        List<Hashtable<String, Object>> curResults = null;
         
         // делаем отборы по всем триплетам условия выборки
         for (SparqlWhere.WhereTriplet whereTrp : triplets) 
@@ -110,24 +110,24 @@ public class SparqlWhere
             StmtIterator iter = model.listStatements();
             while (iter.hasNext()) 
             {
-                Hashtable<String, String> curRes = new Hashtable<String, String>();
+                Hashtable<String, Object> curRes = new Hashtable<String, Object>();
                 Triplet dataTrp = getTripletFromStatement(iter.nextStatement());
                
                 // subject
                 if (whereTrp.subjectType.equals("var")) 
-                    curRes.put(whereTrp.subject, dataTrp.subject);
+                    curRes.put(whereTrp.subject, getTypedObject(dataTrp.subject));
                 else if (!whereTrp.subject.equals(dataTrp.subject))
                     continue; // next statemment
                 
                 // predicate
                 if (whereTrp.predicateType.equals("var")) 
-                    curRes.put(whereTrp.predicate, dataTrp.predicate);
+                    curRes.put(whereTrp.predicate, getTypedObject(dataTrp.predicate));
                 else if (!whereTrp.predicate.equals(dataTrp.predicate))
                     continue; // next statemment
                 
                 // object
                 if (whereTrp.objectType.equals("var")) 
-                    curRes.put(whereTrp.object, dataTrp.object);
+                    curRes.put(whereTrp.object, getTypedObject(dataTrp.object));
                 else if (!whereTrp.object.equals(dataTrp.object))
                     continue; // next statemment
                 
@@ -177,7 +177,7 @@ public class SparqlWhere
                 {
                     // Добавляем результат к текущему
                     for (String v : vars) if (!prevResults.get(i).containsKey(v))
-                        prevResults.get(i).put(v, "[NONE]");
+                        prevResults.get(i).put(v, "");
                     curResults.add(prevResults.get(i));
                 }
             }
@@ -185,7 +185,7 @@ public class SparqlWhere
         }
 
         // debug filter
-        /*for (int j = 0; j < filters.size(); j++)
+        for (int j = 0; j < filters.size(); j++)
         {
             SparqlExpression expr = new SparqlExpression();
             for (int i = 0; i < prevResults.size(); i++) 
@@ -193,14 +193,14 @@ public class SparqlWhere
                 expr.setVars(prevResults.get(i));
                 Object result = expr.exec(filters.get(j));
                 prevResults.get(i).put(
-                    "FILTER:"+Integer.toString(j), 
+                    "[FILTER:"+Integer.toString(j)+"]", 
                     result.toString()
                 );
             }
-        }*/
+        }
         
         // Фильтруем
-        for (int j = 0; j < filters.size(); j++)
+        /*for (int j = 0; j < filters.size(); j++)
         {
             curResults = new ArrayList();
             SparqlExpression expr = new SparqlExpression();
@@ -212,8 +212,26 @@ public class SparqlWhere
                     curResults.add(prevResults.get(i));
             }
             prevResults = curResults;
-        }
+        }*/
         return prevResults;
+    }
+    
+    private Object getTypedObject(String t)
+    {
+        Object res = t;
+        try 
+        {
+            res = Double.parseDouble(t);
+            res = Integer.parseInt(t);
+        }
+        catch (Exception e)
+        {
+            if (t.equals("true"))
+                res = true;
+            else if (t.equals("false"))
+                res = false;
+        }
+        return res;
     }
     
     public void info()

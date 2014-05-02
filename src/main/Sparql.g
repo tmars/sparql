@@ -4,6 +4,16 @@ options {
     output=AST; 
 }
 
+tokens {
+	VAR_RT;
+	STRING_RT;
+	BOOL_RT;
+	INTEGER_RT;
+	DECIMAL_RT;
+	DOUBLE_RT;
+	CALL_RT;
+}
+
 @header{
     import java.util.ArrayList;
     import java.util.List;
@@ -34,7 +44,7 @@ query
 prologue
     : baseDecl? prefixDecl*
     ;
-
+    
 baseDecl
     : 'BASE'^ R=IRI_REF {bases.add($R.text.substring(1, $R.text.length()-1));}
     ;
@@ -96,7 +106,7 @@ limitOffsetClauses
     ;
 
 orderClause
-    : 'ORDER'^ 'BY' orderCondition+ 
+    : 'ORDER'^ 'BY'! orderCondition+ 
     ;
 
 orderCondition
@@ -143,9 +153,9 @@ filter
     ;
 
 constraint
-    : v=brackettedExpression 
-    | b=builtInCall 
-    | e=functionCall 
+    : brackettedExpression 
+    | (builtInCall) -> ^(CALL_RT builtInCall)
+    | functionCall 
     ;
 
 functionCall
@@ -223,8 +233,8 @@ varOrIRIref returns [String type, String value]
     ;
 
 var
-    : VAR1
-    | VAR2
+    : (VAR1) -> ^(VAR_RT VAR1)
+    | (VAR2) -> ^(VAR_RT VAR2)
     ;
 
 graphTerm returns [String type, String value]
@@ -276,7 +286,13 @@ unaryExpression
     ;
 
 primaryExpression
-    : brackettedExpression | builtInCall | iriRefOrFunction | rdfLiteral | numericLiteral | booleanLiteral | var
+    : brackettedExpression 
+    | (builtInCall) -> ^(CALL_RT builtInCall)
+    | iriRefOrFunction 
+    | rdfLiteral 
+    | numericLiteral 
+    | booleanLiteral 
+    | var
     ;
 
 brackettedExpression returns [String value]
@@ -286,15 +302,15 @@ brackettedExpression returns [String value]
 builtInCall
     : 'STR'^ '('! expression ')'!
     | 'LANG'^ '('! expression ')'!
-    | 'LANGMATCHES'^ '('! expression ','^ expression ')'!
+    | 'LANGMATCHES'^ '('! expression ','! expression ')'!
     | 'DATATYPE'^ '('! expression ')'!
     | 'BOUND'^ '('! var ')'!
-    | 'sameTerm'^ '('! expression ','^ expression ')'!
+    | 'sameTerm'^ '('! expression ','! expression ')'!
     | 'isIRI'^ '('! expression ')'!
     | 'isURI'^ '('! expression ')'!
     | 'isBLANK'^ '('! expression ')'!
     | 'isLITERAL'^ '('! expression ')'!
-    | 'REGEX'^ '('! expression ','^ expression ( ','^ expression )? ')'!
+    | 'REGEX'^ '('! expression ','! expression ( ','! expression )? ')'!
     ;
 
 iriRefOrFunction
@@ -310,31 +326,31 @@ numericLiteral
     ;
 
 numericLiteralUnsigned
-    : INTEGER
-    | DECIMAL
-    | DOUBLE
+    : (INTEGER) -> ^(INTEGER_RT INTEGER)
+    | (DECIMAL) -> ^(DECIMAL_RT DECIMAL)
+    | (DOUBLE) -> ^(DOUBLE_RT DOUBLE)
     ;
 
 numericLiteralPositive
-    : INTEGER_POSITIVE
-    | DECIMAL_POSITIVE
-    | DOUBLE_POSITIVE
+    : (INTEGER_POSITIVE) -> ^(INTEGER_RT INTEGER_POSITIVE)
+    | (DECIMAL_POSITIVE) -> ^(DECIMAL_RT DECIMAL_POSITIVE)
+    | (DOUBLE_POSITIVE) -> ^(DOUBLE_RT DOUBLE_POSITIVE)
     ;
 
 numericLiteralNegative
-    : INTEGER_NEGATIVE
-    | DECIMAL_NEGATIVE
-    | DOUBLE_NEGATIVE
+    : (INTEGER_NEGATIVE) -> ^(INTEGER_RT INTEGER_NEGATIVE)
+    | (DECIMAL_NEGATIVE) -> ^(DECIMAL_RT DECIMAL_NEGATIVE)
+    | (DOUBLE_NEGATIVE) -> ^(DOUBLE_RT DOUBLE_NEGATIVE)
     ;
 
 booleanLiteral
-    : 'true'
-    | 'false'
+    : ('true') -> ^(BOOL_RT 'true')
+    | ('false') -> ^(BOOL_RT 'false')
     ;
 
 string
-    : STRING_LITERAL1
-    | STRING_LITERAL2
+    : (STRING_LITERAL1) -> ^(STRING_RT STRING_LITERAL1)
+    | (STRING_LITERAL2) -> ^(STRING_RT STRING_LITERAL2)
     /* | STRING_LITERAL_LONG('0'..'9') | STRING_LITERAL_LONG('0'..'9')*/
     ;
 
@@ -356,7 +372,7 @@ blankNode
 // LEXER RULES
 
 IRI_REF
-    : '<' ( options {greedy=false;} : ~('<' | '>' | '"' | '{' | '}' | '|' | '^' | '\\' | '`') | (PN_CHARS))* '>'
+    : '<'! ( options {greedy=false;} : ~('<' | '>' | '"' | '{' | '}' | '|' | '^' | '\\' | '`') | (PN_CHARS))* '>'!
     ;
 
 PNAME_NS
@@ -431,7 +447,7 @@ STRING_LITERAL1
     ;
 
 STRING_LITERAL2
-    : '"'  ( options {greedy=false;} : ~('\u0022' | '\u005C' | '\u000A' | '\u000D') | ECHAR )* '"'
+    : '"' ( options {greedy=false;} : ~('\u0022' | '\u005C' | '\u000A' | '\u000D') | ECHAR )* '"'
     ;
 
 STRING_LITERAL_LONG1

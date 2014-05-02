@@ -26,11 +26,11 @@ public class SelectQuery extends SparqlQuery {
         fields.add(name);
     }
     
-    protected void execute(List<Hashtable<String, String>> results)
+    protected void execute(List<Hashtable<String, Object>> results)
     {   
         if (allFields) 
         {
-            for (Hashtable<String, String> res: results) 
+            for (Hashtable<String, Object> res: results) 
             {
                 for (String v : res.keySet()) 
                     fields.add(v);
@@ -41,12 +41,12 @@ public class SelectQuery extends SparqlQuery {
         String[][] data = new String[results.size()][fields.size()];
         
         int i = 0;
-        for (Hashtable<String, String> res: results) 
+        for (Hashtable<String, Object> res: results) 
         {
             int j = 0;
             for (String v : fields) 
             {
-                data[i][j] = res.get(v);
+                data[i][j] = res.get(v).toString();
                 j++;
             }
             i++;

@@ -5,7 +5,7 @@ class SparqlOrder
     public enum Sort { ASC, DESC }
     public Hashtable<String, Sort> vars = new Hashtable<String, Sort>();
     
-    private class CustomComparator implements Comparator<Hashtable<String, String>> {
+    private class CustomComparator implements Comparator<Hashtable<String, Object>> {
         public SparqlOrder order;
         
         public CustomComparator(SparqlOrder o)
@@ -14,14 +14,14 @@ class SparqlOrder
         }
         
         @Override
-        public int compare(Hashtable<String, String> o1, Hashtable<String, String> o2) 
+        public int compare(Hashtable<String, Object> o1, Hashtable<String, Object> o2) 
         {
             int diff = 0;
             List<Object> keys = Arrays.asList(order.vars.keySet().toArray());
             Collections.reverse(keys);
             for (Object key : keys)
             {
-                diff = o1.get(key).compareTo(o2.get(key));
+                diff = o1.get(key).toString().compareTo(o2.get(key).toString());
                 if (order.vars.get(key) == Sort.DESC)
                     diff = -diff;
                 if (diff != 0)
@@ -31,7 +31,7 @@ class SparqlOrder
         }
     }
     
-    public List<Hashtable<String, String>> sort(List<Hashtable<String, String>> results)
+    public List<Hashtable<String, Object>> sort(List<Hashtable<String, Object>> results)
     {
         Collections.sort(results, new CustomComparator(this));
         return results;

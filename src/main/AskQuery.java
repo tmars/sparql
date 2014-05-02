@@ -7,7 +7,7 @@ public class AskQuery extends SparqlQuery {
         super(bs, ps);
     }
     
-    protected void execute(List<Hashtable<String, String>> results)
+    protected void execute(List<Hashtable<String, Object>> results)
     {   
         String[] columnNames = {"result"};
         String[][] data = {{""}};

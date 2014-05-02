@@ -75,14 +75,14 @@ public abstract class SparqlQuery {
         return order;
     }
     
-    protected abstract void execute(List<Hashtable<String, String>> results);
+    protected abstract void execute(List<Hashtable<String, Object>> results);
     
     protected void getResult(String filename)
     {
         Model model = ModelFactory.createDefaultModel();
         model.read(filename);
         
-        List<Hashtable<String, String>> results = where.fetch(model, this);
+        List<Hashtable<String, Object>> results = where.fetch(model, this);
         
         results = order.sort(results);
         results = makeOffset(results);
@@ -91,7 +91,7 @@ public abstract class SparqlQuery {
         execute(results);
     }
     
-    private List<Hashtable<String, String>> makeOffset(List<Hashtable<String, String>> results)
+    private List<Hashtable<String, Object>> makeOffset(List<Hashtable<String, Object>> results)
     {
         if (offset > 0)
         {
@@ -105,7 +105,7 @@ public abstract class SparqlQuery {
         return results;
     }
     
-    private List<Hashtable<String, String>> makeLimit(List<Hashtable<String, String>> results)
+    private List<Hashtable<String, Object>> makeLimit(List<Hashtable<String, Object>> results)
     {
         if (limit >= 0)
         {
