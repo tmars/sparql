@@ -2,9 +2,8 @@ PREFIX foaf:  <http://xmlns.com/foaf/0.1/>
 SELECT *
 WHERE {
     ?person foaf:name ?name .
+    ?person foaf:position ?position .
     OPTIONAL { ?person foaf:mbox ?email } .
-    OPTIONAL { ?person foaf:position ?position } .
-    FILTER (STR("Edd Dumbill") = ?name)
 }
 ORDER BY ?name
 

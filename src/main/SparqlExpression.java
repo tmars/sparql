@@ -7,107 +7,6 @@ class SparqlExpression
 {
     Hashtable<String, Object> vars = null;
     
-    private static class BuildInCall
-    {
-        public static Object exec(String call, List<Object> args)
-        {
-            Object res = null;
-        	Method[] methods = BuildInCall.class.getMethods();
-            try 
-            {
-                for (Method m : methods)
-                {
-                    if (m.getName().equals(call)) 
-                    {
-                        res = m.invoke(BuildInCall.class, args);
-                        break;
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-            }
-            return res;
-        }
-        
-        public static Object STR(List<Object> args)
-        {
-            if (args.size() != 1) return null;
-        	return args.get(0).toString();
-        }
-        
-        public static Object LANG(List<Object> args)
-        {
-            if (args.size() != 1) return null;
-        	
-        	return args.get(0).toString();
-        }
-    
-        public static Object LANGMATCHES(List<Object> args)
-        {
-            if (args.size() != 2) return null;
-        	
-        	return args.get(0).toString();
-        }
-    
-        public static Object DATATYPE(List<Object> args)
-        {
-            if (args.size() != 1) return null;
-        	
-        	return args.get(0).toString();
-        }
-    
-        public static Object BOUND(List<Object> args)
-        {
-            if (args.size() != 1) return null;
-        	
-        	return args.get(0).toString();
-        }
-    
-        public static Object sameTerm(List<Object> args)
-        {
-            if (args.size() != 1) return null;
-        	
-        	return args.get(0).toString();
-        }
-    
-        public static Object isIRI(List<Object> args)
-        {
-            if (args.size() != 1) return null;
-        	
-        	return args.get(0).toString();
-        }
-    
-        public static Object isURI(List<Object> args)
-        {
-            if (args.size() != 1) return null;
-        	
-        	return args.get(0).toString();
-        }
-    
-        public static Object isBLANK(List<Object> args)
-        {
-            if (args.size() != 1) return null;
-        	
-        	return args.get(0).toString();
-        }
-    
-        public static Object isLITERAL(List<Object> args)
-        {
-            if (args.size() != 1) return null;
-        	
-        	return args.get(0).toString();
-        }
-    
-        public static Object REGEX(List<Object> args)
-        {   
-            if (args.size() < 2 || args.size() > 3) return null;
-        	
-        	return args.get(0).toString();
-        }
-        
-    }
-    
     public void setVars(Hashtable<String, Object> vs)
     {
         vars = vs;
@@ -197,10 +96,14 @@ class SparqlExpression
             else if (b instanceof Boolean)
             {
                 Boolean bval = (Boolean)b;
-                if (a.equals("true") && bval == true)
-                    diff = 0;
-                else if (a.equals("false") && bval == false)
-                    diff = 0;
+                try 
+                {
+                    if (Boolean.parseBoolean(aval) == bval)
+                        diff = 0;
+                }
+                catch (Exception e)
+                {
+                }
             }
             else if (b instanceof String)
                 diff = aval.compareTo((String)b);
@@ -210,10 +113,14 @@ class SparqlExpression
             Boolean aval = (Boolean)a;
             if (b instanceof String)
             {
-                if (b.equals("true") && aval == true)
-                    diff = 0;
-                else if (b.equals("false") && aval == false)
-                    diff = 0;
+                try 
+                {
+                    if (Boolean.parseBoolean((String)b) == aval)
+                        diff = 0;
+                }
+                catch (Exception e)
+                {
+                }
             }
             else if (b instanceof Boolean)
             {
@@ -224,6 +131,42 @@ class SparqlExpression
         //if (diff == null) System.out.println("null");
         //else System.out.println(diff.toString());
         return diff;
+    }
+    
+    private Double toNumber(Object a)
+    {
+        return 0.0;
+        /*
+        Double res = 0.0;
+        if (a instanceof String)
+        {
+            String aval = (String)a;
+            try 
+            {
+                res = Double.parseDouble(aval);
+            }
+            catch (Exception e1)
+            {
+                try
+                {
+                    if (Boolean.parseBoolean(aval) == true)
+                        a = 1.0;
+                }
+                catch (Exception e2)
+                {
+                }
+            }
+        }
+        else if (a instanceof Integer)
+        {
+            res = ((Integer)a).doubleValue();
+        }
+        else if (a == null)
+        {
+            res = 0.0;
+        }
+        
+        return res;*/
     }
     
     public Object exec(CommonTree root)
@@ -288,79 +231,55 @@ class SparqlExpression
         // BIN
         else if (root.getChildCount() == 2)
         {
-            Object lval = exec((CommonTree)root.getChild(0));
-            Object rval = exec((CommonTree)root.getChild(1));
-            // =
-            if (text.equals("="))
+            String[] compareOperators = {"=", "!=", ">", ">=", "<", "<="};
+            String[] mathOperators = {"+", "-", "*", "/"};
+            if (Arrays.asList(compareOperators).contains(text))
             {
+                Object lval = exec((CommonTree)root.getChild(0));
+                Object rval = exec((CommonTree)root.getChild(1));
                 if (lval == null || rval == null)
-                    res = false;
-                else
                 {
-                    Object r = compare(lval, rval);
-                    if (r == null) res = false;
-                    else res = ((Integer)r) == 0;
+                    res = false;
+                }
+                else 
+                {
+                    Integer r = (Integer)compare(lval, rval);
+                    if (r == null) 
+                        res = false;
+                    
+                    // =
+                    else if (text.equals("="))
+                        res = (r == 0);
+                    
+                    // !=
+                    else if (text.equals("!="))
+                        res = (r != 0);
+                    
+                    // >
+                    else if (text.equals(">"))
+                        res = (r > 0);
+                    
+                    // >=
+                    else if (text.equals(">="))
+                        res = (r >= 0);
+                    
+                    // <
+                    else if (text.equals("<"))
+                        res = (r < 0);
+                    
+                    // <=
+                    else if (text.equals("<="))
+                        res = (r <= 0);
                 }
             }
-            // !=
-            else if (text.equals("!="))
+            else if (Arrays.asList(mathOperators).contains(text))
             {
-                if (lval == null || rval == null)
-                    res = false;
-                else
-                {
-                    Object r = compare(lval, rval);
-                    if (r == null) res = false;
-                    else res = ((Integer)r) != 0;
-                }
-            }
-            // >
-            else if (text.equals(">"))
-            {
-                if (lval == null || rval == null)
-                    res = false;
-                else
-                {
-                    Object r = compare(lval, rval);
-                    if (r == null) res = false;
-                    else res = ((Integer)r) > 0;
-                }
-            }
-            // >=
-            else if (text.equals(">="))
-            {
-                if (lval == null || rval == null)
-                    res = false;
-                else
-                {
-                    Object r = compare(lval, rval);
-                    if (r == null) res = false;
-                    else res = ((Integer)r) >= 0;
-                }
-            }
-            // <
-            else if (text.equals("<"))
-            {
-                if (lval == null || rval == null)
-                    res = false;
-                else
-                {
-                    Object r = compare(lval, rval);
-                    if (r == null) res = false;
-                    else res = ((Integer)r) < 0;
-                }
-            }
-            // <=
-            else if (text.equals("<="))
-            {
-                if (lval == null || rval == null)
-                    res = false;
-                else
-                {
-                    Object r = compare(lval, rval);
-                    if (r == null) res = false;
-                    else res = ((Integer)r) <= 0;
-                }
+                Double lval = toNumber(exec((CommonTree)root.getChild(0)));
+                Double rval = toNumber(exec((CommonTree)root.getChild(1)));
+            
+                // +
+                if (text.equals("+"))
+                    res = lval + rval;
             }
         }
         return res;
