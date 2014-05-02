@@ -167,9 +167,9 @@ class BuildInCall
 	//  http://www.w3.org/TR/sparql11-query/#func-regex
 	//  http://www.w3.org/TR/xpath-functions/#regex-syntax
 	public static Object REGEX(String text, String pattern)
-	{
+    {
 		//  TODO
-    Boolean result = text.matches(pattern);
+        Boolean result = text.matches(pattern);
     
 		return result;
 	}
@@ -178,38 +178,38 @@ class BuildInCall
 	public static Object REGEX(String text, String pattern, String flags)
 	{
 		//  s  Pattern.DOTALL
-    //  m  Pattern.MULTILINE
-    //  i  Pattern.CASE_INSENSITIVE
-    //  x  Pattern.COMMENTS
-    
-    if (flags.contains("s"))
-    {
-      Pattern p = Pattern.compile(pattern, Pattern.DOTALL);
-      Matcher m = p.matcher(text);
-      Boolean result = m.matches();
-      return result;
-    }
-    else if (flags.contains("m"))
-    {
-      Pattern p = Pattern.compile(pattern, Pattern.MULTILINE);
-      Matcher m = p.matcher(text);
-      Boolean result = m.matches();
-      return result;
-    }
-    else if (flags.contains("i"))
-    {
-      Pattern p = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE);
-      Matcher m = p.matcher(text);
-      Boolean result = m.matches();
-      return result;
-    }
-    else if (flags.contains("x"))
-    {
-      Pattern p = Pattern.compile(pattern, Pattern.COMMENTS);
-      Matcher m = p.matcher(text);
-      Boolean result = m.matches();
-      return result;
-    }
+        //  m  Pattern.MULTILINE
+        //  i  Pattern.CASE_INSENSITIVE
+        //  x  Pattern.COMMENTS
+        
+        if (flags.contains("s"))
+        {
+            Pattern p = Pattern.compile(pattern, Pattern.DOTALL);
+            Matcher m = p.matcher(text);
+            Boolean result = m.matches();
+            return result;
+        }
+        else if (flags.contains("m"))
+        {
+            Pattern p = Pattern.compile(pattern, Pattern.MULTILINE);
+            Matcher m = p.matcher(text);
+            Boolean result = m.matches();
+            return result;
+        }
+        else if (flags.contains("i"))
+        {
+            Pattern p = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE);
+            Matcher m = p.matcher(text);
+            Boolean result = m.matches();
+            return result;
+        }
+        else if (flags.contains("x"))
+        {
+            Pattern p = Pattern.compile(pattern, Pattern.COMMENTS);
+            Matcher m = p.matcher(text);
+            Boolean result = m.matches();
+            return result;
+        }
     
 		return REGEX(text, pattern);
 	}
@@ -221,12 +221,29 @@ class BuildInCall
 		
 		if (2 == size)
 		{
-			return REGEX(args.get(0).toString(), args.get(1).toString());
+      String text = args.get(0).toString();
+      String pattern = args.get(1).toString();
+      //System.out.println("**********");
+      //System.out.println(text);
+      //System.out.println(pattern);
+      //System.out.println("**********");
+			return REGEX(text, pattern);
 		}
 		else if (3 == size)
 		{
-			return REGEX(args.get(0).toString(), args.get(1).toString(), args.get(2).toString());
+      String text = args.get(0).toString();
+      String pattern = args.get(1).toString();
+      String flags = args.get(2).toString();
+      //System.out.println("**********");
+      //System.out.println(text);
+      //System.out.println(pattern);
+      //System.out.println(flags);
+      //System.out.println("**********");
+			return REGEX(text, pattern, flags);
 		}
+		
+		return null;
+	}
 		
 		return null;
 	}
