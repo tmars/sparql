@@ -75,7 +75,7 @@ class BuildInCall
 		
 		if (langB == "*" && langA != "")
 			return true;
-		else if (langB == langA)
+    else if (langA.toLowerCase().contains(langB.toLowerCase()))
 			return true;
 		
 		return false;
