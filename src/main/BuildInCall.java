@@ -5,6 +5,7 @@ import java.util.regex.Pattern;
 
 class BuildInCall
 {
+  
 	public static Object exec(String call, List<Object> args)
 	{
 		Object res = null;
@@ -27,9 +28,11 @@ class BuildInCall
 	}
 	
 	//  http://www.w3.org/TR/sparql11-query/#func-str
-	public static Object STR(List<Object> args)
+	public static Object STR(List<Object> args) throws Exception
 	{
-		if (args.size() != 1) return null;
+		if (args.size() != 1) {
+      throw new Exception("Wrong number of arguments");
+    }
 		
 		String result = args.get(0).toString();
 		
@@ -41,14 +44,21 @@ class BuildInCall
 	{		
 		String[] parts = text.split("@");
 		if (parts.length == 2)
+    {
+      System.out.println("**********");
+      System.out.println(parts[1]);
+      System.out.println("**********");
 			return parts[1];
+    }
 		
 		return "";
 	}
 	
-	public static Object LANG(List<Object> args)
+	public static Object LANG(List<Object> args) throws Exception
 	{
-		if (args.size() != 1) return null;
+		if (args.size() != 1) {
+      throw new Exception("Wrong number of arguments");
+    }
 		
 		String text = args.get(0).toString();
 		String result = _LANG(text);
@@ -72,9 +82,11 @@ class BuildInCall
 	}
 
 	
-	public static Object LANGMATCHES(List<Object> args)
+	public static Object LANGMATCHES(List<Object> args) throws Exception
 	{
-		if (args.size() != 2) return null;
+		if (args.size() != 2) {
+      throw new Exception("Wrong number of arguments");
+    }
 		
 		String text = args.get(0).toString();
 		String lang = args.get(1).toString();
@@ -86,9 +98,11 @@ class BuildInCall
 
 	//  http://www.w3.org/TR/sparql11-query/#func-datatype
 	//  for SPARQL 1.0 only!
-	public static Object DATATYPE(List<Object> args)
+	public static Object DATATYPE(List<Object> args) throws Exception
 	{
-		if (args.size() != 1) return null;
+		if (args.size() != 1) {
+      throw new Exception("Wrong number of arguments");
+    }
 		
 		String text = args.get(0).toString();
 		String[] parts = text.split("^^");
@@ -102,9 +116,11 @@ class BuildInCall
 	}
 
 	//  http://www.w3.org/TR/sparql11-query/#func-bound
-	public static Object BOUND(List<Object> args)
+	public static Object BOUND(List<Object> args) throws Exception
 	{
-		if (args.size() != 1) return null;
+		if (args.size() != 1) {
+      throw new Exception("Wrong number of arguments");
+    }
 		
 		if (args.get(0) != null && args.get(0).toString() != "")
 			return true;
@@ -113,9 +129,11 @@ class BuildInCall
 	}
 
 	//  http://www.w3.org/TR/sparql11-query/#func-sameTerm
-	public static Object sameTerm(List<Object> args)
+	public static Object sameTerm(List<Object> args) throws Exception
 	{
-		if (args.size() != 2) return null;
+		if (args.size() != 2) {
+      throw new Exception("Wrong number of arguments");
+    }
 		
 		String textA = args.get(0).toString();
 		String textB = args.get(1).toString();
@@ -126,9 +144,11 @@ class BuildInCall
 
 	
 	//  http://www.w3.org/TR/sparql11-query/#func-isIRI
-	public static Object isIRI(List<Object> args)
+	public static Object isIRI(List<Object> args) throws Exception
 	{
-		if (args.size() != 1) return null;
+		if (args.size() != 1) {
+      throw new Exception("Wrong number of arguments");
+    }
 		
 		//  TODO
     String text = args.get(0).toString();
@@ -137,16 +157,18 @@ class BuildInCall
 		return result;
 	}
 
-	public static Object isURI(List<Object> args)
+	public static Object isURI(List<Object> args) throws Exception
 	{
-		return isIRI(args);
+    return isIRI(args);
 	}
 
 	
 	//  http://www.w3.org/TR/sparql11-query/#func-isBlank
-	public static Object isBLANK(List<Object> args)
+	public static Object isBLANK (List<Object> args) throws Exception
 	{
-		if (args.size() != 1) return null;
+		if (args.size() != 1) {
+      throw new Exception("Wrong number of arguments");
+    }
 		
 		if (args.get(0).toString() == "_" || args.get(0).toString() == "_:")
 			return true;
@@ -156,7 +178,7 @@ class BuildInCall
 
 	
 	//  http://www.w3.org/TR/sparql11-query/#func-isLiteral
-	public static Object isLITERAL(List<Object> args)
+	public static Object isLITERAL(List<Object> args) throws Exception
 	{
 		Boolean result = (Boolean)isIRI(args);
 		
@@ -167,9 +189,8 @@ class BuildInCall
 	//  http://www.w3.org/TR/sparql11-query/#func-regex
 	//  http://www.w3.org/TR/xpath-functions/#regex-syntax
 	public static Object _REGEX(String text, String pattern)
-    {
-		//  TODO
-        Boolean result = text.matches(pattern);
+  {
+		Boolean result = text.matches(pattern);
     
 		return result;
 	}
@@ -181,6 +202,8 @@ class BuildInCall
         //  m  Pattern.MULTILINE
         //  i  Pattern.CASE_INSENSITIVE
         //  x  Pattern.COMMENTS
+        
+        pattern = ".*" + pattern + ".*";
         
         if (flags.contains("s"))
         {
@@ -215,7 +238,7 @@ class BuildInCall
 	}
 	
 	
-	public static Object REGEX(List<Object> args)
+	public static Object REGEX(List<Object> args) throws Exception
 	{
 		int size = args.size();
 		
@@ -223,11 +246,13 @@ class BuildInCall
 		{
             String text = args.get(0).toString();
             String pattern = args.get(1).toString();
-            //System.out.println("**********");
-            //System.out.println(text);
-            //System.out.println(pattern);
-            //System.out.println("**********");
-            return _REGEX(text, pattern);
+            Object r = _REGEX(text, pattern);
+            System.out.println("**********");
+            System.out.println(text);
+            System.out.println(pattern);
+            System.out.println(r);
+            System.out.println("**********");
+            return r;
 		}
 		else if (3 == size)
 		{
@@ -243,7 +268,7 @@ class BuildInCall
             System.out.println("**********");
             return r;
 		}
-		
-		return null;
+      
+    throw new Exception("Wrong number of arguments");
 	}
 }
