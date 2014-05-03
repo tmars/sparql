@@ -1,5 +1,7 @@
 PREFIX dc: <http://purl.org/dc/elements/1.1/>
+PREFIX xml: <http://www.w3.org/2001/XMLSchema#>
 SELECT *
- WHERE { ?x dc:title  "That Seventies Show"@en ;
+ WHERE { ?x dc:title  "That Seventies Show";
             dc:title  ?title .
-         FILTER LANGMATCHES(LANG(?title), "FR") }
+         FILTER LANGMATCHES(LANG(?title), "fr") }
+

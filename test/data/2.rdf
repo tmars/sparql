@@ -7,8 +7,8 @@
     <dc:title>Il Buono, il Bruto, il Cattivo</dc:title>
   </rdf:Description>
   <rdf:Description rdf:nodeID="f4256065584b1">
-    <dc:title xml:lang="fr">"Cette Série des Années Soixante-dix"</dc:title>
-    <dc:title xml:lang="fr-BE">"Cette Série des Années Septante"</dc:title>
-    <dc:title xml:lang="en">"That Seventies Show"</dc:title>
+    <dc:title xml:lang="fr">Cette Série des Années Soixante-dix</dc:title>
+    <dc:title xml:lang="fr-BE">Cette Série des Années Septante</dc:title>
+    <dc:title rdf:datatype="http://www.w3.org/2001/XMLSchema#string" >That Seventies Show</dc:title>
   </rdf:Description>
 </rdf:RDF>

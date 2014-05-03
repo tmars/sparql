@@ -39,8 +39,13 @@ public class SparqlWhere
     
     List<CommonTree> filters = new ArrayList<>();
     
-    public SparqlWhere()
+    List<String> bases = null;
+    Hashtable<String, String> prefixes = null;
+    
+    public SparqlWhere(List<String> bs, Hashtable<String, String> ps)
     {
+        bases = bs;
+        prefixes = ps;
         union();
     }
     
@@ -89,6 +94,12 @@ public class SparqlWhere
     
     private Triplet getTripletFromStatement(Statement stmt)
     {
+        /*System.out.println(stmt.getLanguage());
+        try{
+        System.out.println(((Literal) stmt.getObject().as(Literal.class)).getDatatypeURI());
+        }catch(Exception e){}
+        */
+        
         String s = stmt.getSubject().toString();     // получить субъект
         String p = stmt.getPredicate().toString();   // получить предикат
         String o;
@@ -96,17 +107,87 @@ public class SparqlWhere
         if (to instanceof Resource) 
            o = to.toString();
         else // объект - литерал
-            o = to.toString();
-            
+        {
+            Literal l = ((Literal) stmt.getObject().as(Literal.class));
+            o = "\"" + l.getString() + "\"";
+            if (!l.getLanguage().equals("")) 
+                o += "@" + l.getLanguage();
+            else if (l.getDatatypeURI() != null)
+                o += "^^" + l.getDatatypeURI();
+        }    
         return new Triplet(s, p, o);
     }
     
-    public List<Hashtable<String, Object>> fetch(Model model, SparqlQuery query)
+    private String getRealIRI(String iri)
+    {
+        String[] parts = iri.split(":");
+        if (parts.length == 2 && prefixes.containsKey(parts[0] + ":"))
+            return prefixes.get(parts[0] + ":") + parts[1];
+        return iri;
+    }
+    
+    private Boolean compareParts(String a, String t, String b)
+    {
+        Boolean res = false;
+        if (t.equals("short_iri"))
+        {
+            res = getRealIRI(a).equals(b);
+        }
+        else if (t.equals("rdf_lit"))
+        {   
+            String[] aParts = BuildInCall._TEXT_DROP(a, "@");
+            String[] bParts = BuildInCall._TEXT_DROP(b, "@");
+            if (
+                (
+                    (aParts.length == 2 && bParts.length == 2 && BuildInCall._LANGMATCHES(aParts[1], bParts[1])) || 
+                    aParts.length == 1
+                ) &&
+                aParts[0].equals(bParts[0])
+            )
+            {
+                res = true;
+            }
+            if (res == false) 
+            {
+                aParts = BuildInCall._TEXT_DROP(a, "^^");
+                bParts = BuildInCall._TEXT_DROP(b, "^^");
+                if (
+                    (
+                        (aParts.length == 2 && bParts.length == 2 && getRealIRI(aParts[1]).equals(getRealIRI(bParts[1]))) ||
+                        aParts.length == 1
+                    ) &&
+                    aParts[0].equals(bParts[0])
+                )
+                {
+                    res = true;
+                }
+                /*System.out.println("-----------");
+                if (aParts.length == 2 && bParts.length == 2)
+                {
+                    System.out.println((aParts[1]));
+                    System.out.println((bParts[1]));
+                    System.out.println(getRealIRI(aParts[1]));
+                    System.out.println(getRealIRI(bParts[1]));
+                }
+                System.out.println(a);
+                System.out.println(b);
+                System.out.println(res);
+                System.out.println("-----------");*/
+            }
+        }
+        else // var | iri | num_lit | bool_lit | blank
+        {
+            res = a.equals(b);
+        }
+        return res;
+    }
+    
+    public List<Hashtable<String, Object>> fetch(Model model)
     {   
         List<Hashtable<String, Object>> results = new ArrayList();
         for (List<WhereTriplet> triplets : tripletsSets)
         {
-            results.addAll(fetchTriplets(triplets, model, query));
+            results.addAll(fetchTriplets(triplets, model));
         }
         
         // debug filter
@@ -142,7 +223,7 @@ public class SparqlWhere
         return results;
     }
     
-    private List<Hashtable<String, Object>> fetchTriplets(List<WhereTriplet> triplets, Model model, SparqlQuery query)
+    private List<Hashtable<String, Object>> fetchTriplets(List<WhereTriplet> triplets, Model model)
     {
         // индексы попавших в результат
         Set<Integer> activeIndexes = new HashSet<Integer>();
@@ -156,10 +237,6 @@ public class SparqlWhere
             activeIndexes.clear();
             curResults = new ArrayList<>();
         
-            whereTrp.subject = query.getVarTermIRI(whereTrp.subject, whereTrp.subjectType);
-            whereTrp.predicate = query.getVarTermIRI(whereTrp.predicate, whereTrp.predicateType);
-            whereTrp.object = query.getVarTermIRI(whereTrp.object, whereTrp.objectType);
-        
             // список утверждений в Модели
             StmtIterator iter = model.listStatements();
             while (iter.hasNext()) 
@@ -170,19 +247,19 @@ public class SparqlWhere
                 // subject
                 if (whereTrp.subjectType.equals("var")) 
                     curRes.put(whereTrp.subject, getTypedObject(dataTrp.subject));
-                else if (!whereTrp.subject.equals(dataTrp.subject))
+                else if (!compareParts(whereTrp.subject, whereTrp.subjectType, dataTrp.subject))
                     continue; // next statemment
                 
                 // predicate
                 if (whereTrp.predicateType.equals("var")) 
                     curRes.put(whereTrp.predicate, getTypedObject(dataTrp.predicate));
-                else if (!whereTrp.predicate.equals(dataTrp.predicate))
+                else if (!compareParts(whereTrp.predicate, whereTrp.predicateType, dataTrp.predicate))
                     continue; // next statemment
                 
                 // object
                 if (whereTrp.objectType.equals("var")) 
                     curRes.put(whereTrp.object, getTypedObject(dataTrp.object));
-                else if (!whereTrp.object.equals(dataTrp.object))
+                else if (!compareParts(whereTrp.object, whereTrp.objectType, dataTrp.object))
                     continue; // next statemment
                 
                 // Ищем соответствие с предыдущими результатами

@@ -30,26 +30,41 @@ class BuildInCall
 	//  http://www.w3.org/TR/sparql11-query/#func-str
 	public static Object STR(List<Object> args) throws Exception
 	{
-		if (args.size() != 1) {
-      throw new Exception("Wrong number of arguments");
-    }
+		if (args.size() != 1) 
+        {
+            throw new Exception("Wrong number of arguments");
+        }
 		
 		String result = args.get(0).toString();
 		
 		return result;
 	}
-	
+    
+	public static String[] _TEXT_DROP(String text, String c)
+    {
+        int sp = text.lastIndexOf(c);
+        if (sp > 0)
+        {
+            String[] res = {"", ""};
+            res[0] = text.substring(0, sp);
+            res[1] = text.substring(sp+c.length(), text.length());
+            return res;
+        }
+        else 
+        {
+            String[] res = {text};
+            return res;
+        }
+    }
+    
 	//  http://www.w3.org/TR/sparql11-query/#func-lang
 	public static String _LANG(String text)
 	{		
-		String[] parts = text.split("@");
+		String[] parts = _TEXT_DROP(text, "@");
 		if (parts.length == 2)
-    {
-      System.out.println("**********");
-      System.out.println(parts[1]);
-      System.out.println("**********");
-			return parts[1];
-    }
+        {
+            return parts[1];
+        }
 		
 		return "";
 	}
@@ -57,8 +72,8 @@ class BuildInCall
 	public static Object LANG(List<Object> args) throws Exception
 	{
 		if (args.size() != 1) {
-      throw new Exception("Wrong number of arguments");
-    }
+            throw new Exception("Wrong number of arguments");
+        }
 		
 		String text = args.get(0).toString();
 		String result = _LANG(text);
@@ -68,30 +83,21 @@ class BuildInCall
 
 	
 	//  http://www.w3.org/TR/sparql11-query/#func-langMatches
-	public static Boolean _LANGMATCHES(String text, String lang)
+	public static Boolean _LANGMATCHES(String langA, String langB)
 	{		
-		String langA = text;
-		String langB = lang;
-    
-    System.out.println("**********");
-    System.out.println(langA);
-    System.out.println(langB);
-    System.out.println("**********");
-		
-		if (langB == "*" && langA != "")
+        if (langB == "*" && langA != "")
 			return true;
-    else if (langA.toLowerCase().contains(langB.toLowerCase()))
+        else if (langA.toLowerCase().contains(langB.toLowerCase()))
 			return true;
 		
 		return false;
 	}
-
-	
+    
 	public static Object LANGMATCHES(List<Object> args) throws Exception
 	{
 		if (args.size() != 2) {
-      throw new Exception("Wrong number of arguments");
-    }
+            throw new Exception("Wrong number of arguments");
+        }
 		
 		String text = args.get(0).toString();
 		String lang = args.get(1).toString();
@@ -103,15 +109,15 @@ class BuildInCall
 
 	//  http://www.w3.org/TR/sparql11-query/#func-datatype
 	//  for SPARQL 1.0 only!
-  public static String _DATATYPE(String text)
+    public static String _DATATYPE(String text)
 	{
-		String[] parts = text.split("^^");
+		String[] parts = _TEXT_DROP(text, "^^");
 		if (parts.length == 2)
 		{
 			String result = parts[1];
-      System.out.println("**********");
-      System.out.println(result);
-      System.out.println("**********");
+            System.out.println("**********");
+            System.out.println(result);
+            System.out.println("**********");
 			return result;
 		}
 		
@@ -121,8 +127,8 @@ class BuildInCall
 	public static Object DATATYPE(List<Object> args) throws Exception
 	{
 		if (args.size() != 1) {
-      throw new Exception("Wrong number of arguments");
-    }
+            throw new Exception("Wrong number of arguments");
+        }
 		
 		Object result = _DATATYPE(args.get(0).toString());
 		

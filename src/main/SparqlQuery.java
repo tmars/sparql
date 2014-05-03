@@ -7,13 +7,15 @@ public abstract class SparqlQuery {
     int offset = -1;
     List<String> bases = null;
     Hashtable<String, String> prefixes = null;
-    SparqlWhere where = new SparqlWhere();
-    SparqlOrder order = new SparqlOrder();
+    SparqlWhere where = null;
+    SparqlOrder order = null;
     
     public SparqlQuery(List<String> bs, Hashtable<String, String> ps)
     {
         bases = bs;
         prefixes = ps;
+        where = new SparqlWhere(bs, ps);
+        order = new SparqlOrder();
     }
     
     public void info()
@@ -83,7 +85,7 @@ public abstract class SparqlQuery {
         Model model = ModelFactory.createDefaultModel();
         model.read(filename);
        
-        List<Hashtable<String, Object>> results = where.fetch(model, this);
+        List<Hashtable<String, Object>> results = where.fetch(model);
         results = order.sort(results);
         results = makeOffset(results);
         results = makeLimit(results);
@@ -115,23 +117,5 @@ public abstract class SparqlQuery {
             }
         }
         return results;
-    }
-    
-    public String getVarTermIRI(String value, String type)
-    {
-        String r = "";
-        if (type.equals("short_iri"))
-            r = getRealIRI(value);
-        else // var | rdf_lit | iri | num_lit | bool_lit | blank
-            r = value;
-        return r;
-    }
-    
-    private String getRealIRI(String iri)
-    {
-        String[] parts = iri.split(":");
-        if (parts.length == 2 && prefixes.containsKey(parts[0] + ":"))
-            return prefixes.get(parts[0] + ":") + parts[1];
-        return "";
     }
 }
