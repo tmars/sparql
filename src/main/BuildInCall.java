@@ -70,7 +70,7 @@ class BuildInCall
 	//  http://www.w3.org/TR/sparql11-query/#func-langMatches
 	public static Boolean _LANGMATCHES(String text, String lang)
 	{		
-		String langA = _LANG(text);
+		String langA = text;
 		String langB = lang;
     
     System.out.println("**********");
