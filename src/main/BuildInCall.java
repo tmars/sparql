@@ -250,11 +250,11 @@ class BuildInCall
             String text = args.get(0).toString();
             String pattern = args.get(1).toString();
             Object r = _REGEX(text, pattern);
-            System.out.println("**********");
+            /*System.out.println("**********");
             System.out.println(text);
             System.out.println(pattern);
             System.out.println(r);
-            System.out.println("**********");
+            System.out.println("**********");*/
             return r;
 		}
 		else if (3 == size)
@@ -263,12 +263,12 @@ class BuildInCall
             String pattern = args.get(1).toString();
             String flags = args.get(2).toString();
             Object r = _REGEX(text, pattern, flags);
-            System.out.println("**********");
+            /*System.out.println("**********");
             System.out.println(text);
             System.out.println(pattern);
             System.out.println(flags);
             System.out.println(r);
-            System.out.println("**********");
+            System.out.println("**********");*/
             return r;
 		}
       

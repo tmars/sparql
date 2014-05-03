@@ -157,8 +157,7 @@ class SparqlExpression
                     if (vars.containsKey(nval))
                         res = vars.get(nval);
                     else
-                        res = null;
-                    // todo: exception 
+                        res = "";
                 }
                 // STRING
                 else if (text.equals("STRING_RT"))

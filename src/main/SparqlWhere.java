@@ -34,8 +34,15 @@ public class SparqlWhere
     String curPredicateType = "";
     boolean isOptional = false;
     
-    List<WhereTriplet> triplets = new ArrayList<>();
+    List<List<WhereTriplet>> tripletsSets = new ArrayList<>();
+    int curTripletsInd = 0;
+    
     List<CommonTree> filters = new ArrayList<>();
+    
+    public SparqlWhere()
+    {
+        union();
+    }
     
     public void start(String v, String t)
     {
@@ -57,7 +64,7 @@ public class SparqlWhere
             v, t,
             isOptional
         );
-	    triplets.add(r);
+	    tripletsSets.get(curTripletsInd).add(r);
     }
     
     public void setOptional(boolean f)
@@ -72,6 +79,12 @@ public class SparqlWhere
     public void addFilter(Object t)
     {
         filters.add((CommonTree)t);
+    }
+    
+    public void union()
+    {
+        tripletsSets.add(new ArrayList());
+        curTripletsInd = tripletsSets.size()-1;
     }
     
     private Triplet getTripletFromStatement(Statement stmt)
@@ -90,6 +103,47 @@ public class SparqlWhere
     
     public List<Hashtable<String, Object>> fetch(Model model, SparqlQuery query)
     {   
+        List<Hashtable<String, Object>> results = new ArrayList();
+        for (List<WhereTriplet> triplets : tripletsSets)
+        {
+            results.addAll(fetchTriplets(triplets, model, query));
+        }
+        
+        // debug filter
+        for (int j = 0; j < filters.size(); j++)
+        {
+            SparqlExpression expr = new SparqlExpression();
+            for (int i = 0; i < results.size(); i++) 
+            {
+                expr.setVars(results.get(i));
+                Object result = expr.exec(filters.get(j));
+                results.get(i).put(
+                    "[FILTER:"+Integer.toString(j)+"]", 
+                    result.toString()
+                );
+            }
+        }
+        
+        // Фильтруем
+        /*for (int j = 0; j < filters.size(); j++)
+        {
+            List<Hashtable<String, Object>> curResults = new ArrayList();
+            SparqlExpression expr = new SparqlExpression();
+            for (int i = 0; i < results.size(); i++) 
+            {
+                expr.setVars(results.get(i));
+                Object result = expr.exec(filters.get(j));
+                if (result instanceof Boolean && result == true)
+                    curResults.add(results.get(i));
+            }
+            results = curResults;
+        }*/
+        
+        return results;
+    }
+    
+    private List<Hashtable<String, Object>> fetchTriplets(List<WhereTriplet> triplets, Model model, SparqlQuery query)
+    {
         // индексы попавших в результат
         Set<Integer> activeIndexes = new HashSet<Integer>();
             
@@ -97,7 +151,7 @@ public class SparqlWhere
         List<Hashtable<String, Object>> curResults = null;
         
         // делаем отборы по всем триплетам условия выборки
-        for (SparqlWhere.WhereTriplet whereTrp : triplets) 
+        for (WhereTriplet whereTrp : triplets) 
         {
             activeIndexes.clear();
             curResults = new ArrayList<>();
@@ -183,36 +237,6 @@ public class SparqlWhere
             }
             prevResults = curResults;
         }
-
-        // debug filter
-        for (int j = 0; j < filters.size(); j++)
-        {
-            SparqlExpression expr = new SparqlExpression();
-            for (int i = 0; i < prevResults.size(); i++) 
-            {
-                expr.setVars(prevResults.get(i));
-                Object result = expr.exec(filters.get(j));
-                prevResults.get(i).put(
-                    "[FILTER:"+Integer.toString(j)+"]", 
-                    result.toString()
-                );
-            }
-        }
-        
-        // Фильтруем
-        /*for (int j = 0; j < filters.size(); j++)
-        {
-            curResults = new ArrayList();
-            SparqlExpression expr = new SparqlExpression();
-            for (int i = 0; i < prevResults.size(); i++) 
-            {
-                expr.setVars(prevResults.get(i));
-                Object result = expr.exec(filters.get(j));
-                if (result instanceof Boolean && result == true)
-                    curResults.add(prevResults.get(i));
-            }
-            prevResults = curResults;
-        }*/
         return prevResults;
     }
     
@@ -236,23 +260,27 @@ public class SparqlWhere
     
     public void info()
     {
-        if (triplets.isEmpty()) 
+        System.out.println("where:");
+        if (tripletsSets.isEmpty()) 
         {
-            System.out.println("\ttriples: [NONE]");
+            System.out.println("\ttriplets: [NONE]");
         }
         else 
         {
-            System.out.println("\ttriples:");
-            for (WhereTriplet t : triplets) 
+            for (List<WhereTriplet> triplets : tripletsSets)
             {
-                System.out.print("\t\t" +
-                    t.subject + " (" + t.subjectType+ ") " +
-                    t.predicate + " (" + t.predicateType+ ") " +
-                    t.object + " (" + t.objectType+ ")"
-                );
-                if (t.isOptional)
-                    System.out.print(" [OPTIONAL]");
-                System.out.println();
+                System.out.println("\ttriplets:");
+                for (WhereTriplet t : triplets) 
+                {
+                    System.out.print("\t\t" +
+                        t.subject + " (" + t.subjectType+ ") " +
+                        t.predicate + " (" + t.predicateType+ ") " +
+                        t.object + " (" + t.objectType+ ")"
+                    );
+                    if (t.isOptional)
+                        System.out.print(" [OPTIONAL]");
+                    System.out.println();
+                }
             }
         }
         if (filters.isEmpty()) 

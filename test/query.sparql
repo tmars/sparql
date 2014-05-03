@@ -3,8 +3,9 @@ SELECT ?gname1 ?gname2
 WHERE {
     { ?x foaf:name ?gname1 } 
     UNION { ?x foaf:position   ?gname2 } .
+    FILTER REGEX(?gname1, "^da", "i")
 }
-ORDER BY ?name
+ORDER BY ?gname1
 
 
 
