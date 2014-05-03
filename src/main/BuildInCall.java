@@ -103,13 +103,8 @@ class BuildInCall
 
 	//  http://www.w3.org/TR/sparql11-query/#func-datatype
 	//  for SPARQL 1.0 only!
-	public static Object DATATYPE(List<Object> args) throws Exception
+  public static String _DATATYPE(String text)
 	{
-		if (args.size() != 1) {
-      throw new Exception("Wrong number of arguments");
-    }
-		
-		String text = args.get(0).toString();
 		String[] parts = text.split("^^");
 		if (parts.length == 2)
 		{
@@ -121,6 +116,17 @@ class BuildInCall
 		}
 		
 		return "xsd:string";
+	}
+  
+	public static Object DATATYPE(List<Object> args) throws Exception
+	{
+		if (args.size() != 1) {
+      throw new Exception("Wrong number of arguments");
+    }
+		
+		Object result = _DATATYPE(args.get(0).toString());
+		
+		return result;
 	}
 
 	//  http://www.w3.org/TR/sparql11-query/#func-bound
