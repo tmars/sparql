@@ -197,7 +197,15 @@ class SparqlExpression
                     List<Object> args = new ArrayList();
                     for (int i = 0; i < node.getChildCount(); i++)
                         args.add(exec((CommonTree)node.getChild(i)));
-                    res = BuildInCall.exec(nval, args);
+                    try 
+                    {
+                        res = BuildInCall.exec(nval, args);
+                    }
+                    catch (Exception e)
+                    {
+                        System.out.println("Невозможно выполнить функцию: " + nval);
+                        System.out.println(e.getMessage());
+                    }
                 }
             }
             if (Arrays.asList(unaryOperators).contains(text))
