@@ -26,4 +26,11 @@ public class Triplet
         object = o;
         objectType = "";
     }
+    
+    public String toString()
+    {
+        return subject + " (" + subjectType + ") " +
+            predicate + " (" + predicateType + ") " +
+            object + " (" + objectType + ") " ;
+    }
 }

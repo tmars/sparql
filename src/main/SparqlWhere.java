@@ -166,7 +166,7 @@ public class SparqlWhere
             {
                 Hashtable<String, Object> curRes = new Hashtable<String, Object>();
                 Triplet dataTrp = getTripletFromStatement(iter.nextStatement());
-               
+                
                 // subject
                 if (whereTrp.subjectType.equals("var")) 
                     curRes.put(whereTrp.subject, getTypedObject(dataTrp.subject));
@@ -188,7 +188,6 @@ public class SparqlWhere
                 // Ищем соответствие с предыдущими результатами
                 if (prevResults != null) 
                 {
-                    boolean isFinded = false;
                     // Просматриваем предыдущие результаты
                     for (int i = 0; i < prevResults.size(); i++)
                     {
@@ -207,20 +206,23 @@ public class SparqlWhere
                         // Найден пересекающийся по переменным и значениям результат
                         if (isEquals) 
                         {
+                            Hashtable<String, Object> res = new Hashtable<String, Object>();
                             // Добавляем недостоющие значения переменных
                             for (String v : prevResults.get(i).keySet()) 
-                                curRes.put(v, prevResults.get(i).get(v));
-                            isFinded = true;
+                                res.put(v, prevResults.get(i).get(v));
+                            for (String v : curRes.keySet()) 
+                                res.put(v, curRes.get(v));
+                            curResults.add(res);
                             activeIndexes.add(i);
-                            break;
                         }
                     } 
-                    if (!isFinded)
-                        continue; // next statemment
                 } 
-                
-                curResults.add(curRes);
+                else
+                {
+                    curResults.add(curRes);
+                }
             }
+            
             // Если опциональное условие то 
             // добавляем не попавшие предыдущие в текущие
             if (whereTrp.isOptional)
