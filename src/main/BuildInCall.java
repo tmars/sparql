@@ -72,6 +72,11 @@ class BuildInCall
 	{		
 		String langA = _LANG(text);
 		String langB = lang;
+    
+    System.out.println("**********");
+    System.out.println(langA);
+    System.out.println(langB);
+    System.out.println("**********");
 		
 		if (langB == "*" && langA != "")
 			return true;
