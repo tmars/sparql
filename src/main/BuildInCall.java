@@ -109,6 +109,9 @@ class BuildInCall
 		if (parts.length == 2)
 		{
 			String result = parts[1];
+      System.out.println("**********");
+      System.out.println(result);
+      System.out.println("**********");
 			return result;
 		}
 		
