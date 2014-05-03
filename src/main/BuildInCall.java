@@ -37,7 +37,7 @@ class BuildInCall
 	}
 	
 	//  http://www.w3.org/TR/sparql11-query/#func-lang
-	public static String LANG(String text)
+	public static String _LANG(String text)
 	{		
 		String[] parts = text.split("@");
 		if (parts.length == 2)
@@ -51,16 +51,16 @@ class BuildInCall
 		if (args.size() != 1) return null;
 		
 		String text = args.get(0).toString();
-		String result = LANG(text);
+		String result = _LANG(text);
 		
 		return result;
 	}
 
 	
 	//  http://www.w3.org/TR/sparql11-query/#func-langMatches
-	public static Boolean LANGMATCHES(String text, String lang)
+	public static Boolean _LANGMATCHES(String text, String lang)
 	{		
-		String langA = LANG(text);
+		String langA = _LANG(text);
 		String langB = lang;
 		
 		if (langB == "*" && langA != "")
@@ -79,7 +79,7 @@ class BuildInCall
 		String text = args.get(0).toString();
 		String lang = args.get(1).toString();
 		
-		Boolean result = LANGMATCHES(text, lang);
+		Boolean result = _LANGMATCHES(text, lang);
 		
 		return result;
 	}
@@ -166,7 +166,7 @@ class BuildInCall
 
 	//  http://www.w3.org/TR/sparql11-query/#func-regex
 	//  http://www.w3.org/TR/xpath-functions/#regex-syntax
-	public static Object REGEX(String text, String pattern)
+	public static Object _REGEX(String text, String pattern)
     {
 		//  TODO
         Boolean result = text.matches(pattern);
@@ -175,7 +175,7 @@ class BuildInCall
 	}
 		
 	
-	public static Object REGEX(String text, String pattern, String flags)
+	public static Object _REGEX(String text, String pattern, String flags)
 	{
 		//  s  Pattern.DOTALL
         //  m  Pattern.MULTILINE
@@ -211,7 +211,7 @@ class BuildInCall
             return result;
         }
     
-		return REGEX(text, pattern);
+		return _REGEX(text, pattern);
 	}
 	
 	
@@ -221,31 +221,29 @@ class BuildInCall
 		
 		if (2 == size)
 		{
-      String text = args.get(0).toString();
-      String pattern = args.get(1).toString();
-      //System.out.println("**********");
-      //System.out.println(text);
-      //System.out.println(pattern);
-      //System.out.println("**********");
-			return REGEX(text, pattern);
+            String text = args.get(0).toString();
+            String pattern = args.get(1).toString();
+            //System.out.println("**********");
+            //System.out.println(text);
+            //System.out.println(pattern);
+            //System.out.println("**********");
+            return _REGEX(text, pattern);
 		}
 		else if (3 == size)
 		{
-      String text = args.get(0).toString();
-      String pattern = args.get(1).toString();
-      String flags = args.get(2).toString();
-      //System.out.println("**********");
-      //System.out.println(text);
-      //System.out.println(pattern);
-      //System.out.println(flags);
-      //System.out.println("**********");
-			return REGEX(text, pattern, flags);
+            String text = args.get(0).toString();
+            String pattern = args.get(1).toString();
+            String flags = args.get(2).toString();
+            Object r = _REGEX(text, pattern, flags);
+            System.out.println("**********");
+            System.out.println(text);
+            System.out.println(pattern);
+            System.out.println(flags);
+            System.out.println(r);
+            System.out.println("**********");
+            return r;
 		}
 		
 		return null;
 	}
-		
-		return null;
-	}
-	
 }

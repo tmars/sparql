@@ -4,7 +4,7 @@ WHERE {
     ?person foaf:name ?name .
     ?person foaf:position ?position .
     OPTIONAL { ?person foaf:mbox ?email } .
-    FILTER (?position / 2 > 1023 / 2)
+    FILTER REGEX(?name, "^Dean") 
 }
 ORDER BY ?name
 
