@@ -85,7 +85,7 @@ class BuildInCall
 	//  http://www.w3.org/TR/sparql11-query/#func-langMatches
 	public static Boolean _LANGMATCHES(String langA, String langB)
 	{		
-        if (langB == "*" && langA != "")
+        if (langB.equals("*") && !langA.equals(""))
 			return true;
         else if (langA.toLowerCase().contains(langB.toLowerCase()))
 			return true;
@@ -142,7 +142,7 @@ class BuildInCall
       throw new Exception("Wrong number of arguments");
     }
 		
-		if (args.get(0) != null && args.get(0).toString() != "")
+		if (args.get(0) != null && !args.get(0).toString().equals(""))
 			return true;
 		
 		return false;
@@ -157,7 +157,7 @@ class BuildInCall
 		
 		String textA = args.get(0).toString();
 		String textB = args.get(1).toString();
-		Boolean result = textA == textB;
+		Boolean result = textA.equals(textB);
 		
 		return result;
 	}
@@ -190,7 +190,7 @@ class BuildInCall
       throw new Exception("Wrong number of arguments");
     }
 		
-		if (args.get(0).toString() == "_" || args.get(0).toString() == "_:")
+		if (args.get(0).toString().equals("_") || args.get(0).toString().equals("_:"))
 			return true;
 		
 		return false;
