@@ -236,7 +236,6 @@ public class SparqlWhere
     
     public void info()
     {
-        System.out.println("where:");
         if (triplets.isEmpty()) 
         {
             System.out.println("\ttriples: [NONE]");

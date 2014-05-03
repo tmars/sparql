@@ -103,7 +103,7 @@ class SparqlExpression
     
     private Double toNumber(Object a)
     {
-        Double res = 0.0;
+        Double res = null;
         if (a instanceof String)
         {
             String aval = (String)a;
@@ -126,10 +126,6 @@ class SparqlExpression
         else if (a instanceof Integer)
         {
             res = ((Integer)a).doubleValue();
-        }
-        else if (a == null)
-        {
-            res = 0.0;
         }
         
         return res;
@@ -223,7 +219,6 @@ class SparqlExpression
                         res = (Number)nval;
                     else
                         res = 0.0 - ((Number)nval).doubleValue();
-                        
                 }
                 // -
                 else if (text.equals("-") && nval instanceof Number)
@@ -280,7 +275,9 @@ class SparqlExpression
             {
                 Double lval = toNumber(exec((CommonTree)root.getChild(0)));
                 Double rval = toNumber(exec((CommonTree)root.getChild(1)));
-            
+                if (lval == null) lval = 0.0;
+                if (rval == null) rval = 0.0;
+                    
                 // +
                 if (text.equals("+"))
                     res = lval + rval;
@@ -294,7 +291,7 @@ class SparqlExpression
                     res = lval * rval;
                     
                 // /
-                else if (text.equals("/"))
+                else if (text.equals("/") && rval != 0.0)
                     res = lval / rval;
             }
         }

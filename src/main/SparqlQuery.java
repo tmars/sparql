@@ -7,7 +7,8 @@ public abstract class SparqlQuery {
     int offset = -1;
     List<String> bases = null;
     Hashtable<String, String> prefixes = null;
-    SparqlWhere where = new SparqlWhere();
+    List<SparqlWhere> wheres = new ArrayList();
+    SparqlWhere where = null;
     SparqlOrder order = new SparqlOrder();
     
     public SparqlQuery(List<String> bs, Hashtable<String, String> ps)
@@ -46,7 +47,22 @@ public abstract class SparqlQuery {
                 System.out.println("\t" + pr + " -> " + prefixes.get(pr));
             }
         }
-        where.info();
+        
+        if (wheres.isEmpty()) 
+        {
+            System.out.println("wheres: [NONE]");
+        } 
+        else
+        {
+            int i = 1;
+            System.out.println("wheres:");
+            for (SparqlWhere w : wheres) 
+            {
+                System.out.println(Integer.toString(i));
+                w.info();
+                i++;
+            }
+        }
         order.info();
     }
     
@@ -65,6 +81,16 @@ public abstract class SparqlQuery {
         offset = v;
     }
     
+    public void startWhere()
+    {
+        where = new SparqlWhere();
+    }
+    
+    public void finishWhere()
+    {
+        wheres.add(where);
+    }
+    
     public SparqlWhere getWhere()
     {
         return where;
@@ -81,9 +107,12 @@ public abstract class SparqlQuery {
     {
         Model model = ModelFactory.createDefaultModel();
         model.read(filename);
-        
-        List<Hashtable<String, Object>> results = where.fetch(model, this);
-        
+       
+        List<Hashtable<String, Object>> results = new ArrayList();
+        for (SparqlWhere w : wheres)
+        {
+            results.addAll(w.fetch(model, this));
+        }
         results = order.sort(results);
         results = makeOffset(results);
         results = makeLimit(results);

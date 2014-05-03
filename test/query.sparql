@@ -1,10 +1,8 @@
 PREFIX foaf:  <http://xmlns.com/foaf/0.1/>
-SELECT *
+SELECT ?gname1 ?gname2
 WHERE {
-    ?person foaf:name ?name .
-    ?person foaf:position ?position .
-    OPTIONAL { ?person foaf:mbox ?email } .
-    FILTER REGEX(?name, "^Dean") 
+    { ?x foaf:name ?gname1 } 
+    UNION { ?x foaf:position   ?gname2 } .
 }
 ORDER BY ?name
 

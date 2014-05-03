@@ -94,7 +94,7 @@ sourceSelector
     ;
 
 whereClause
-    : 'WHERE'^? groupGraphPattern 
+    : 'WHERE'^? {query.startWhere();} groupGraphPattern {query.finishWhere();}
     ;
 
 solutionModifier
@@ -145,7 +145,8 @@ graphGraphPattern
     ;
 
 groupOrUnionGraphPattern
-    : groupGraphPattern ( 'UNION'^ groupGraphPattern )*
+    : groupGraphPattern 
+    	( 'UNION' {query.finishWhere();query.startWhere();} groupGraphPattern )*
     ;
 
 filter

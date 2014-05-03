@@ -14,14 +14,18 @@ class SparqlOrder
         }
         
         @Override
-        public int compare(Hashtable<String, Object> o1, Hashtable<String, Object> o2) 
+        public int compare(Hashtable<String, Object> row1, Hashtable<String, Object> row2) 
         {
             int diff = 0;
             List<Object> keys = Arrays.asList(order.vars.keySet().toArray());
             Collections.reverse(keys);
             for (Object key : keys)
             {
-                diff = o1.get(key).toString().compareTo(o2.get(key).toString());
+                Object o1 = row1.get(key);
+                Object o2 = row2.get(key);
+                if (o1 == null || o2 == null)
+                    continue;
+                diff = o1.toString().compareTo(o2.toString());
                 if (order.vars.get(key) == Sort.DESC)
                     diff = -diff;
                 if (diff != 0)

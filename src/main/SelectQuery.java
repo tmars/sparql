@@ -46,7 +46,11 @@ public class SelectQuery extends SparqlQuery {
             int j = 0;
             for (String v : fields) 
             {
-                data[i][j] = res.get(v).toString();
+                Object o = res.get(v);
+                if (o == null)
+                    data[i][j] = "";
+                else
+                    data[i][j] = o.toString();
                 j++;
             }
             i++;
