@@ -200,7 +200,7 @@ object
 
 verb returns [String type, String value]
     : v=varOrIRIref {$type = $v.type; $value = $v.value;}
-    | 'a' {$type = "iri_ref"; $value = "rdf:type";}
+    | 'a' {$type = "short_iri"; $value = "rdf:type";}
     ;
 
 triplesNode
