@@ -46,6 +46,11 @@ class RDFLiteral
         return datatype;
     }
     
+    public String getText()
+    {
+        return text;
+    }
+    
     private void setText(String t)
     {
         if (t.charAt(0) == '"' && t.charAt(t.length()-1) == '"')

@@ -6,55 +6,21 @@ import com.hp.hpl.jena.rdf.model.*;
 
 public class SparqlWhere 
 {
-	RDFNode curSubject;
-    RDFNode curPredicate;
-    boolean curIsOptional = false;
-    
-    List<List<WhereTriplet>> tripletsSets = new ArrayList<>();
-    int curTripletsInd = 0;
-    
+	List<List<WhereTriplet>> tripletsSets = new ArrayList<>();
     List<CommonTree> filters = new ArrayList<>();
     
     public SparqlWhere()
     {
-        union();
     }
     
-    public void start(String v, String t)
-    {
-		curSubject = WhereTriplet.getVarOrTerm(v, t);
-    }
-    
-    public void addPredicate(String v, String t)
-    {
-		curPredicate = WhereTriplet.getVarOrIRI(v, t);
-    }
-    
-    public void addObject(String v, String t)
-    {
-    	RDFNode object = WhereTriplet.getVarOrTerm(v, t);
-        WhereTriplet r = new WhereTriplet(curSubject, curPredicate, object, curIsOptional);
-	    tripletsSets.get(curTripletsInd).add(r);
-    }
-    
-    public void setOptional(boolean f)
-    {
-        curIsOptional = f;
-    }
-    
-    public void finish()
-    {
-    }
+    public void addTriplets(List<WhereTriplet> triplets)
+	{
+		tripletsSets.add(triplets);
+	}
     
     public void addFilter(Object t)
     {
         filters.add((CommonTree)t);
-    }
-    
-    public void union()
-    {
-        tripletsSets.add(new ArrayList());
-        curTripletsInd = tripletsSets.size()-1;
     }
     
     public List<Hashtable<String, Object>> fetch(Model model)

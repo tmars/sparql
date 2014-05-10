@@ -20,7 +20,8 @@ tokens {
 
 @members{
     SparqlQuery query = null;
-
+	TripletConstructor trpConstr = new TripletConstructor();
+	
     private SelectQuery sq() {return (SelectQuery)query;}
     private AskQuery aq() {return (AskQuery)query;}
     private ConstructQuery cq() {return (ConstructQuery)query;}
@@ -59,7 +60,8 @@ selectQuery
 
 constructQuery
     : 'CONSTRUCT'^ {query = new ConstructQuery();} 
-        constructTemplate datasetClause* whereClause solutionModifier
+        constructTemplate {cq().setTriplets(trpConstr.pop());}
+		datasetClause* whereClause solutionModifier
     ;
 
 describeQuery
@@ -92,7 +94,7 @@ sourceSelector
     ;
 
 whereClause
-    : 'WHERE'^? groupGraphPattern
+    : 'WHERE'^? groupGraphPattern {query.getWhere().addTriplets(trpConstr.pop());}
     ;
 
 solutionModifier
@@ -135,7 +137,7 @@ graphPatternNotTriples
     ;
 
 optionalGraphPattern
-    : 'OPTIONAL' {query.getWhere().setOptional(true);} groupGraphPattern {query.getWhere().setOptional(false);}
+    : 'OPTIONAL' {trpConstr.setOptional(true);} groupGraphPattern {trpConstr.setOptional(false);}
     ;
 
 graphGraphPattern
@@ -144,7 +146,7 @@ graphGraphPattern
 
 groupOrUnionGraphPattern
     : groupGraphPattern 
-    	( 'UNION' {query.getWhere().union();} groupGraphPattern )*
+    	( 'UNION' {query.getWhere().addTriplets(trpConstr.pop());} groupGraphPattern )*
     ;
 
 filter
@@ -174,16 +176,16 @@ constructTriples
     ;
 
 triplesSameSubject
-    : s=varOrTerm {query.getWhere().start($s.value, $s.type);} 
-    	propertyListNotEmpty {query.getWhere().finish();} 
+    : s=varOrTerm {trpConstr.start($s.value, $s.type);} 
+    	propertyListNotEmpty  
     | triplesNode 
-    	propertyList {query.getWhere().finish();} 
+    	propertyList  
     ;
 
 propertyListNotEmpty
-    : p=verb {query.getWhere().addPredicate($p.value, $p.type);} 
+    : p=verb {trpConstr.addPredicate($p.value, $p.type);} 
     	objectList 
-    	( ';' ( p=verb {query.getWhere().addPredicate($p.value, $p.type);} objectList )? )* 
+    	( ';' ( p=verb {trpConstr.addPredicate($p.value, $p.type);} objectList )? )* 
     ;
 
 propertyList
@@ -195,7 +197,7 @@ objectList
     ;
 
 object
-    : o=graphNode {query.getWhere().addObject($o.value, $o.type);}
+    : o=graphNode {trpConstr.addObject($o.value, $o.type);}
     ;
 
 verb returns [String type, String value]
