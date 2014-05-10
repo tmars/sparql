@@ -1,7 +1,9 @@
 import java.util.*;
+import com.hp.hpl.jena.rdf.model.*;
+import org.apache.jena.riot.*;
 
-public class DescribeQuery extends SparqlQuery {
-    
+public class DescribeQuery extends SparqlQuery
+{    
     List<String> vars = new ArrayList<>();
     List<String> iriRefs = new ArrayList<>();
     private boolean allFields = false;
@@ -30,9 +32,59 @@ public class DescribeQuery extends SparqlQuery {
         //TODO exception
     }
     
-    protected void execute(List<Hashtable<String, Object>> results)
-    {   
+    protected void execute(List<Hashtable<String, Object>> results, Model model)
+    {
+        List<String> fields = new ArrayList<>();
+        if (allFields) 
+        {
+            for (Hashtable<String, Object> res: results) 
+            {
+                for (String v : res.keySet()) 
+                    fields.add(v);
+                break;
+            }
+        }
+        else
+        {
+            fields = vars;
+        }
         
+        for (Hashtable<String, Object> res: results) 
+        {
+            for (String v : fields) 
+            {
+                Object o = res.get(v);
+                if (o instanceof RDFNode && ((RDFNode)o).getType() == RDFNode.Type.RESOURCE)
+                {
+                    iriRefs.add(o.toString());   
+                }
+            }
+        }
+        Config.getInstance().log("resources: " + iriRefs);
+        
+        Model mout = ModelFactory.createDefaultModel();
+        for (String r : iriRefs)
+        {
+            buildModel(model.getResource(r), model, mout);
+        }
+        
+        RDFDataMgr.write(System.out, mout, RDFFormat.RDFXML) ;
+    }
+    
+    private Resource buildModel(Resource resource, Model in, Model out)
+    {
+        Resource instance = out.createResource(resource.getURI());
+        StmtIterator iter = resource.listProperties();
+        while (iter.hasNext()) 
+        {
+            Statement stmt = iter.nextStatement();
+            Property prop = ResourceFactory.createProperty(stmt.getPredicate().toString());
+            if (stmt.getObject() instanceof Resource)
+                instance.addProperty(prop, buildModel((Resource)stmt.getObject(), in, out));
+            else
+                instance.addProperty(prop, stmt.getObject());
+        }
+        return instance;
     }
     
     public void info()

@@ -1,4 +1,5 @@
 import java.util.*;
+import com.hp.hpl.jena.rdf.model.*;
 import dnl.utils.text.table.TextTable;
 
 public class SelectQuery extends SparqlQuery {
@@ -26,7 +27,7 @@ public class SelectQuery extends SparqlQuery {
         fields.add(name);
     }
     
-    protected void execute(List<Hashtable<String, Object>> results)
+    protected void execute(List<Hashtable<String, Object>> results, Model model)
     {   
         if (allFields) 
         {

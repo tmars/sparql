@@ -1,7 +1,3 @@
-PREFIX dc: <http://purl.org/dc/elements/1.1/>
-PREFIX xml: <http://www.w3.org/2001/XMLSchema#>
-SELECT *
- WHERE { ?x dc:title  "That Seventies Show";
-            dc:title  ?title .
-         FILTER LANGMATCHES(LANG(?title), "fr") }
-
+PREFIX vCard: <http://www.w3.org/2001/vcard-rdf/3.0#>
+DESCRIBE ?x
+WHERE { ?x vCard:FN "Matt Jones"@fr}

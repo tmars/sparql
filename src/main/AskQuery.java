@@ -1,4 +1,5 @@
 import java.util.*;
+import com.hp.hpl.jena.rdf.model.*;
 import dnl.utils.text.table.TextTable;
 
 public class AskQuery extends SparqlQuery {
@@ -7,7 +8,7 @@ public class AskQuery extends SparqlQuery {
         super();
     }
     
-    protected void execute(List<Hashtable<String, Object>> results)
+    protected void execute(List<Hashtable<String, Object>> results, Model model)
     {   
         String[] columnNames = {"result"};
         String[][] data = {{""}};

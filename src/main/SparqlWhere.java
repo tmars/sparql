@@ -6,70 +6,7 @@ import com.hp.hpl.jena.rdf.model.*;
 
 public class SparqlWhere 
 {
-	public static class WhereTriplet extends RDFTriplet
-	{
-		public boolean isOptional = false;
-		
-		public WhereTriplet(RDFNode s, RDFNode p, RDFNode o, boolean isOpt)
-		{
-			super(s, p, o);
-			isOptional = isOpt;
-		}
-		
-		public static RDFNode getVarOrTerm(String v, String t)
-		{
-			RDFNode.Type type;
-			if (t.equals("var"))
-			{
-				type = RDFNode.Type.VAR;
-			}
-			else if (t.equals("iri"))
-			{
-				type = RDFNode.Type.RESOURCE;
-			}
-			else if (t.equals("short_iri"))
-			{
-				v = Config.getInstance().getRealIRI(v);
-				type = RDFNode.Type.RESOURCE;
-			}
-			else if (t.equals("rdf_lit"))
-			{
-				RDFLiteral lit = new RDFLiteral(v);
-				v = lit.toString();
-				type = RDFNode.Type.LITERAL;
-			}
-			else 
-			{
-				type = RDFNode.Type.OTHER;
-			}
-			return new RDFNode(v, type);
-		}
-		
-		public static RDFNode getVarOrIRI(String v, String t)
-		{
-			RDFNode.Type type;
-			if (t.equals("var"))
-			{
-				type = RDFNode.Type.VAR;
-			}
-			else if (t.equals("short_iri"))
-			{
-				v = Config.getInstance().getRealIRI(v);
-				type = RDFNode.Type.RESOURCE;
-			}
-			else if (t.equals("iri"))
-			{
-				type = RDFNode.Type.RESOURCE;
-			}
-			else 
-			{
-				type = RDFNode.Type.OTHER;
-			}
-			return new RDFNode(v, type);
-		}
-	}
-
-    RDFNode curSubject;
+	RDFNode curSubject;
     RDFNode curPredicate;
     boolean curIsOptional = false;
     
@@ -118,26 +55,6 @@ public class SparqlWhere
     {
         tripletsSets.add(new ArrayList());
         curTripletsInd = tripletsSets.size()-1;
-    }
-    
-    private RDFTriplet getTripletFromStatement(Statement stmt)
-    {
-        RDFNode s = new RDFNode(stmt.getSubject().toString(), RDFNode.Type.RESOURCE);
-		RDFNode p = new RDFNode(stmt.getPredicate().toString(), RDFNode.Type.RESOURCE);   // получить предикат
-        RDFNode o;
-        // получить объект
-        if (stmt.getObject() instanceof Resource) 
-        {
-			o = new RDFNode(stmt.getObject().toString(), RDFNode.Type.RESOURCE);
-		}
-		else // объект - литерал
-        {
-            Literal l = ((Literal) stmt.getObject().as(Literal.class));
-            RDFLiteral lit = new RDFLiteral(l.getString(),
-				l.getDatatypeURI(), l.getLanguage());
-			o = new RDFNode(lit.toString(), RDFNode.Type.LITERAL);
-		}    
-        return new RDFTriplet(s, p, o);
     }
     
     public List<Hashtable<String, Object>> fetch(Model model)
@@ -206,7 +123,7 @@ public class SparqlWhere
             {
                 Hashtable<String, Object> curRes = new Hashtable<String, Object>();
                 Statement stmt = iter.nextStatement();
-				RDFTriplet dataTrp = getTripletFromStatement(stmt);
+				StatementTriplet dataTrp = new StatementTriplet(stmt);
                 
                 // subject
                 if (whereTrp.subject.type == RDFNode.Type.VAR) 

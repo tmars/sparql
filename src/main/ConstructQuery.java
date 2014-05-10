@@ -1,4 +1,5 @@
 import java.util.*;
+import com.hp.hpl.jena.rdf.model.*;
 
 public class ConstructQuery extends SparqlQuery {
     public ConstructQuery()
@@ -6,7 +7,7 @@ public class ConstructQuery extends SparqlQuery {
         super();
     }
     
-    protected void execute(List<Hashtable<String, Object>> results)
+    protected void execute(List<Hashtable<String, Object>> results, Model model)
     {   
         
     }

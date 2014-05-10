@@ -74,7 +74,7 @@ public abstract class SparqlQuery {
         return order;
     }
     
-    protected abstract void execute(List<Hashtable<String, Object>> results);
+    protected abstract void execute(List<Hashtable<String, Object>> results, Model model);
     
     public void getResult(String filename)
     {
@@ -91,7 +91,7 @@ public abstract class SparqlQuery {
         results = execOffset(results);
         results = execLimit(results);
         
-        execute(results);
+        execute(results, model);
     }
     
     private List<Hashtable<String, Object>> execOffset(List<Hashtable<String, Object>> results)
