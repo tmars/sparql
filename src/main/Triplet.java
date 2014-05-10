@@ -2,9 +2,9 @@ public class Triplet
 {
     public String subject;
     public String subjectType;
-    public String predicate; 
+    public String predicate;
     public String predicateType; 
-    public String object;
+    public String object; 
     public String objectType;
     
     public Triplet(String s, String st, String p, String pt, String o, String ot)

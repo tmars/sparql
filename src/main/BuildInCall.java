@@ -37,33 +37,11 @@ class BuildInCall
 		return result;
 	}
     
-	public static String[] _TEXT_DROP(String text, String c)
-    {
-        int sp = text.lastIndexOf(c);
-        if (sp > 0)
-        {
-            String[] res = {"", ""};
-            res[0] = text.substring(0, sp);
-            res[1] = text.substring(sp+c.length(), text.length());
-            return res;
-        }
-        else 
-        {
-            String[] res = {text};
-            return res;
-        }
-    }
-    
 	//  http://www.w3.org/TR/sparql11-query/#func-lang
 	public static String _LANG(String text)
-	{		
-		String[] parts = _TEXT_DROP(text, "@");
-		if (parts.length == 2)
-        {
-            return parts[1];
-        }
-		
-		return "";
+	{
+		RDFLiteral lit = new RDFLiteral(text);
+		return lit.getLanguage();
 	}
 	
 	public static Object LANG(List<Object> args) throws Exception
@@ -87,7 +65,15 @@ class BuildInCall
 		{
 			return true;
 		}
+		else if (langA.equals("") || langB.equals(""))
+		{
+			return true;
+		}
         else if (langA.toLowerCase().contains(langB.toLowerCase()))
+		{
+			return true;
+		}
+		else if (langB.toLowerCase().contains(langA.toLowerCase()))
 		{
 			return true;
 		}
@@ -113,14 +99,9 @@ class BuildInCall
 	//  for SPARQL 1.0 only!
     public static String _DATATYPE(String text)
 	{
-		String result = "http://www.w3.org/2001/XMLSchema#string";
-		String[] parts = _TEXT_DROP(text, "^^");
-		if (parts.length == 2)
-		{
-			result = parts[1];
-		}
-		Config.getInstance().log("DATATYPE(" + text + ") = " + result);
-		return result;
+		RDFLiteral lit = new RDFLiteral(text);
+		String l = lit.getDatatype();
+		return l.equals("") ? "http://www.w3.org/2001/XMLSchema#string" : l;
 	}
   
 	public static Object DATATYPE(List<Object> args) throws Exception

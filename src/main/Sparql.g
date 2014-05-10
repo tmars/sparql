@@ -64,7 +64,10 @@ constructQuery
 
 describeQuery
     : 'DESCRIBE'^ {query = new DescribeQuery();} 
-        ( varOrIRIref+ | '*' ) datasetClause* whereClause? solutionModifier 
+        ( (v=varOrIRIref {dq().addField($v.text, $v.type);} )+ 
+		| '*' {dq().setAllFields(true);}
+		)
+		datasetClause* whereClause? solutionModifier 
     ;
 
 askQuery
