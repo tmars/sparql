@@ -2,9 +2,9 @@ import java.util.*;
 import dnl.utils.text.table.TextTable;
 
 public class AskQuery extends SparqlQuery {
-    public AskQuery(List<String> bs, Hashtable<String, String> ps)
+    public AskQuery()
     {
-        super(bs, ps);
+        super();
     }
     
     protected void execute(List<Hashtable<String, Object>> results)

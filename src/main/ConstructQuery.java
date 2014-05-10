@@ -1,9 +1,9 @@
 import java.util.*;
 
 public class ConstructQuery extends SparqlQuery {
-    public ConstructQuery(List<String> bs, Hashtable<String, String> ps)
+    public ConstructQuery()
     {
-        super(bs, ps);
+        super();
     }
     
     protected void execute(List<Hashtable<String, Object>> results)

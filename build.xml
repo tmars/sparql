@@ -44,7 +44,20 @@
         </java>
     </target> 
     
-    <target name="exec">
+    <target name="execd">
+        <java classname="${exec_query.classname}" output="${result.sparql}">
+            <classpath>
+                <fileset dir="${lib.dir}/compile-time" />
+                <pathelement location="${bin.dir}" />
+            </classpath>
+            <arg value="${query.sparql}" />
+            <arg value="${query.rdf}" />
+			<arg value="-d" />
+        </java>
+        <echo>exec query ${result.sparql} finished</echo> 
+    </target>
+	
+	<target name="exec">
         <java classname="${exec_query.classname}" output="${result.sparql}">
             <classpath>
                 <fileset dir="${lib.dir}/compile-time" />

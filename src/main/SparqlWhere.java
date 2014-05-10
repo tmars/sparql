@@ -39,13 +39,8 @@ public class SparqlWhere
     
     List<CommonTree> filters = new ArrayList<>();
     
-    List<String> bases = null;
-    Hashtable<String, String> prefixes = null;
-    
-    public SparqlWhere(List<String> bs, Hashtable<String, String> ps)
+    public SparqlWhere()
     {
-        bases = bs;
-        prefixes = ps;
         union();
     }
     
@@ -118,20 +113,12 @@ public class SparqlWhere
         return new Triplet(s, p, o);
     }
     
-    private String getRealIRI(String iri)
-    {
-        String[] parts = iri.split(":");
-        if (parts.length == 2 && prefixes.containsKey(parts[0] + ":"))
-            return prefixes.get(parts[0] + ":") + parts[1];
-        return iri;
-    }
-    
     private Boolean compareParts(String a, String t, String b)
     {
         Boolean res = false;
         if (t.equals("short_iri"))
         {
-            res = getRealIRI(a).equals(b);
+            res = Config.getInstance().getRealIRI(a).equals(b);
         }
         else if (t.equals("rdf_lit"))
         {   
@@ -153,7 +140,13 @@ public class SparqlWhere
                 bParts = BuildInCall._TEXT_DROP(b, "^^");
                 if (
                     (
-                        (aParts.length == 2 && bParts.length == 2 && getRealIRI(aParts[1]).equals(getRealIRI(bParts[1]))) ||
+                        (
+							aParts.length == 2 &&
+							bParts.length == 2 &&
+							Config.getInstance().getRealIRI(aParts[1]).equals(
+								Config.getInstance().getRealIRI(bParts[1])
+							)
+						) ||
                         aParts.length == 1
                     ) &&
                     aParts[0].equals(bParts[0])
@@ -161,18 +154,6 @@ public class SparqlWhere
                 {
                     res = true;
                 }
-                /*System.out.println("-----------");
-                if (aParts.length == 2 && bParts.length == 2)
-                {
-                    System.out.println((aParts[1]));
-                    System.out.println((bParts[1]));
-                    System.out.println(getRealIRI(aParts[1]));
-                    System.out.println(getRealIRI(bParts[1]));
-                }
-                System.out.println(a);
-                System.out.println(b);
-                System.out.println(res);
-                System.out.println("-----------");*/
             }
         }
         else // var | iri | num_lit | bool_lit | blank
@@ -190,35 +171,40 @@ public class SparqlWhere
             results.addAll(fetchTriplets(triplets, model));
         }
         
-        // debug filter
-        for (int j = 0; j < filters.size(); j++)
-        {
-            SparqlExpression expr = new SparqlExpression();
-            for (int i = 0; i < results.size(); i++) 
-            {
-                expr.setVars(results.get(i));
-                Object result = expr.exec(filters.get(j));
-                results.get(i).put(
-                    "[FILTER:"+Integer.toString(j)+"]", 
-                    result.toString()
-                );
-            }
+		if (Config.getInstance().isDebug())
+		{
+			// debug filter
+			for (int j = 0; j < filters.size(); j++)
+			{
+				SparqlExpression expr = new SparqlExpression();
+				for (int i = 0; i < results.size(); i++) 
+				{
+					expr.setVars(results.get(i));
+					Object result = expr.exec(filters.get(j));
+					results.get(i).put(
+						"[FILTER:"+Integer.toString(j)+"]", 
+						result.toString()
+					);
+				}
+			}
         }
-        
-        // Фильтруем
-        /*for (int j = 0; j < filters.size(); j++)
-        {
-            List<Hashtable<String, Object>> curResults = new ArrayList();
-            SparqlExpression expr = new SparqlExpression();
-            for (int i = 0; i < results.size(); i++) 
-            {
-                expr.setVars(results.get(i));
-                Object result = expr.exec(filters.get(j));
-                if (result instanceof Boolean && result == true)
-                    curResults.add(results.get(i));
-            }
-            results = curResults;
-        }*/
+        else
+		{
+			// Фильтруем
+			for (int j = 0; j < filters.size(); j++)
+			{
+				List<Hashtable<String, Object>> curResults = new ArrayList();
+				SparqlExpression expr = new SparqlExpression();
+				for (int i = 0; i < results.size(); i++) 
+				{
+					expr.setVars(results.get(i));
+					Object result = expr.exec(filters.get(j));
+					if (result instanceof Boolean && result == true)
+						curResults.add(results.get(i));
+				}
+				results = curResults;
+			}
+		}
         
         return results;
     }
@@ -372,9 +358,9 @@ public class SparqlWhere
             for (CommonTree f : filters) 
             {
                 System.out.println("\t\t" + f.toStringTree());
-                DOTTreeGenerator gen = new DOTTreeGenerator();
+                /*DOTTreeGenerator gen = new DOTTreeGenerator();
                 StringTemplate st = gen.toDOT(f);
-                System.out.println(st);
+                System.out.println(st);*/
             }
         }
     }

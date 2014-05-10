@@ -12,13 +12,10 @@ class BuildInCall
 		Method[] methods = BuildInCall.class.getMethods();
 		try 
 		{
-			for (Method m : methods)
+			for (Method m : methods) if (m.getName().equals(call)) 
 			{
-				if (m.getName().equals(call)) 
-				{
-					res = m.invoke(BuildInCall.class, args);
-					break;
-				}
+				res = m.invoke(BuildInCall.class, args);
+				break;
 			}
 		}
 		catch (Exception e)
@@ -71,7 +68,8 @@ class BuildInCall
 	
 	public static Object LANG(List<Object> args) throws Exception
 	{
-		if (args.size() != 1) {
+		if (args.size() != 1)
+		{
             throw new Exception("Wrong number of arguments");
         }
 		
@@ -86,16 +84,20 @@ class BuildInCall
 	public static Boolean _LANGMATCHES(String langA, String langB)
 	{		
         if (langB.equals("*") && !langA.equals(""))
+		{
 			return true;
+		}
         else if (langA.toLowerCase().contains(langB.toLowerCase()))
+		{
 			return true;
-		
+		}
 		return false;
 	}
     
 	public static Object LANGMATCHES(List<Object> args) throws Exception
 	{
-		if (args.size() != 2) {
+		if (args.size() != 2)
+		{
             throw new Exception("Wrong number of arguments");
         }
 		
@@ -111,22 +113,20 @@ class BuildInCall
 	//  for SPARQL 1.0 only!
     public static String _DATATYPE(String text)
 	{
+		String result = "http://www.w3.org/2001/XMLSchema#string";
 		String[] parts = _TEXT_DROP(text, "^^");
 		if (parts.length == 2)
 		{
-			String result = parts[1];
-            System.out.println("**********");
-            System.out.println(result);
-            System.out.println("**********");
-			return result;
+			result = parts[1];
 		}
-		
-		return "xsd:string";
+		Config.getInstance().log("DATATYPE(" + text + ") = " + result);
+		return result;
 	}
   
 	public static Object DATATYPE(List<Object> args) throws Exception
 	{
-		if (args.size() != 1) {
+		if (args.size() != 1)
+		{
             throw new Exception("Wrong number of arguments");
         }
 		
@@ -138,9 +138,10 @@ class BuildInCall
 	//  http://www.w3.org/TR/sparql11-query/#func-bound
 	public static Object BOUND(List<Object> args) throws Exception
 	{
-		if (args.size() != 1) {
-      throw new Exception("Wrong number of arguments");
-    }
+		if (args.size() != 1)
+		{
+			throw new Exception("Wrong number of arguments");
+		}
 		
 		if (args.get(0) != null && !args.get(0).toString().equals(""))
 			return true;
@@ -151,9 +152,10 @@ class BuildInCall
 	//  http://www.w3.org/TR/sparql11-query/#func-sameTerm
 	public static Object sameTerm(List<Object> args) throws Exception
 	{
-		if (args.size() != 2) {
-      throw new Exception("Wrong number of arguments");
-    }
+		if (args.size() != 2)
+		{
+			throw new Exception("Wrong number of arguments");
+		}
 		
 		String textA = args.get(0).toString();
 		String textB = args.get(1).toString();
@@ -166,29 +168,30 @@ class BuildInCall
 	//  http://www.w3.org/TR/sparql11-query/#func-isIRI
 	public static Object isIRI(List<Object> args) throws Exception
 	{
-		if (args.size() != 1) {
-      throw new Exception("Wrong number of arguments");
-    }
+		if (args.size() != 1)
+		{
+			throw new Exception("Wrong number of arguments");
+		}
 		
 		//  TODO
-    String text = args.get(0).toString();
-    Boolean result = text.matches("'<' ([^<>\"{}|^`\\]-[#x00-#x20])* '>'");
+		String text = args.get(0).toString();
+		Boolean result = text.matches("'<' ([^<>\"{}|^`\\]-[#x00-#x20])* '>'");
 		
 		return result;
 	}
 
 	public static Object isURI(List<Object> args) throws Exception
 	{
-    return isIRI(args);
+		return isIRI(args);
 	}
-
 	
 	//  http://www.w3.org/TR/sparql11-query/#func-isBlank
 	public static Object isBLANK (List<Object> args) throws Exception
 	{
-		if (args.size() != 1) {
-      throw new Exception("Wrong number of arguments");
-    }
+		if (args.size() != 1)
+		{
+			throw new Exception("Wrong number of arguments");
+		}
 		
 		if (args.get(0).toString().equals("_") || args.get(0).toString().equals("_:"))
 			return true;
@@ -267,12 +270,8 @@ class BuildInCall
             String text = args.get(0).toString();
             String pattern = args.get(1).toString();
             Object r = _REGEX(text, pattern);
-            /*System.out.println("**********");
-            System.out.println(text);
-            System.out.println(pattern);
-            System.out.println(r);
-            System.out.println("**********");*/
-            return r;
+			Config.getInstance().log("REGEX(" + text + ", " + pattern + ") = " + r);
+			return r;
 		}
 		else if (3 == size)
 		{
@@ -280,15 +279,10 @@ class BuildInCall
             String pattern = args.get(1).toString();
             String flags = args.get(2).toString();
             Object r = _REGEX(text, pattern, flags);
-            /*System.out.println("**********");
-            System.out.println(text);
-            System.out.println(pattern);
-            System.out.println(flags);
-            System.out.println(r);
-            System.out.println("**********");*/
-            return r;
+        	Config.getInstance().log("REGEX(" + text + ", " + pattern + ", " + flags + ") = " + r);
+			return r;
 		}
       
-    throw new Exception("Wrong number of arguments");
+		throw new Exception("Wrong number of arguments");
 	}
 }

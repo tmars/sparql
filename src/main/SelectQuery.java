@@ -6,9 +6,9 @@ public class SelectQuery extends SparqlQuery {
     private boolean allFields = false;
     List<String> fields = new ArrayList<>();
     
-    public SelectQuery(List<String> bs, Hashtable<String, String> ps)
+    public SelectQuery()
     {
-        super(bs, ps);
+        super();
     }
     
     public void setIsDistinct(boolean f)

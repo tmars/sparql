@@ -10,11 +10,10 @@ public class QueryExec {
         CommonTokenStream tokens = new CommonTokenStream(lexer);
         SparqlParser parser = new SparqlParser(tokens);
         parser.query(); 
-        /*CommonTree tree = (CommonTree)parser.query().getTree();
-        DOTTreeGenerator gen = new DOTTreeGenerator();
-        StringTemplate st = gen.toDOT(tree);
-        System.out.println(st);*/
-        
+        if (args.length > 2 && args[2].equals("-d"))
+			Config.getInstance().setDebug(true);
+		else
+			Config.getInstance().setDebug(false);
         parser.query.getResult(args[1]);
     }
 }

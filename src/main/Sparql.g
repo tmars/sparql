@@ -12,18 +12,13 @@ tokens {
 	DECIMAL_RT;
 	DOUBLE_RT;
 	CALL_RT;
+	IRI_RT;
 }
 
 @header{
-    import java.util.ArrayList;
-    import java.util.List;
-    import java.util.Hashtable;
 }
 
 @members{
-    List<String> bases = new ArrayList<>();
-    Hashtable<String, String> prefixes = new Hashtable<String, String>();
-    
     SparqlQuery query = null;
 
     private SelectQuery sq() {return (SelectQuery)query;}
@@ -38,7 +33,7 @@ tokens {
 
 query
     : 
-    prologue ( selectQuery | constructQuery | describeQuery | askQuery ) EOF { query.info(); }
+    prologue ( selectQuery | constructQuery | describeQuery | askQuery ) EOF {}
     ;
 
 prologue
@@ -46,15 +41,15 @@ prologue
     ;
     
 baseDecl
-    : 'BASE'^ R=IRI_REF {bases.add($R.text.substring(1, $R.text.length()-1));}
+    : 'BASE'^ R=IRI_REF {Config.getInstance().bases.add($R.text.substring(1, $R.text.length()-1));}
     ;
 
 prefixDecl
-    : 'PREFIX'^ P=PNAME_NS R=IRI_REF {prefixes.put($P.text, $R.text.substring(1, $R.text.length()-1));}
+    : 'PREFIX'^ P=PNAME_NS R=IRI_REF {Config.getInstance().prefixes.put($P.text, $R.text.substring(1, $R.text.length()-1));}
     ;
 
 selectQuery
-    : 'SELECT'^ {query = new SelectQuery(bases, prefixes);} 
+    : 'SELECT'^ {query = new SelectQuery();} 
         ( 'DISTINCT' {sq().setIsDistinct(true);})? 
         ( (var {sq().addField($var.text);})+ 
         | '*' {sq().setAllFields(true);}
@@ -63,17 +58,17 @@ selectQuery
     ;
 
 constructQuery
-    : 'CONSTRUCT'^ {query = new ConstructQuery(bases, prefixes);} 
+    : 'CONSTRUCT'^ {query = new ConstructQuery();} 
         constructTemplate datasetClause* whereClause solutionModifier
     ;
 
 describeQuery
-    : 'DESCRIBE'^ {query = new DescribeQuery(bases, prefixes);} 
+    : 'DESCRIBE'^ {query = new DescribeQuery();} 
         ( varOrIRIref+ | '*' ) datasetClause* whereClause? solutionModifier 
     ;
 
 askQuery
-    : 'ASK'^ {query = new AskQuery(bases, prefixes);}
+    : 'ASK'^ {query = new AskQuery();}
         datasetClause* whereClause 
     ;
 
@@ -289,7 +284,7 @@ unaryExpression
 primaryExpression
     : brackettedExpression 
     | (builtInCall) -> ^(CALL_RT builtInCall)
-    | iriRefOrFunction 
+    | iriRefOrFunction -> ^(IRI_RT iriRefOrFunction)
     | rdfLiteral 
     | numericLiteral 
     | booleanLiteral 

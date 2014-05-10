@@ -5,16 +5,12 @@ public abstract class SparqlQuery {
     String dataset = "";
     int limit = -1;
     int offset = -1;
-    List<String> bases = null;
-    Hashtable<String, String> prefixes = null;
     SparqlWhere where = null;
     SparqlOrder order = null;
     
-    public SparqlQuery(List<String> bs, Hashtable<String, String> ps)
+    public SparqlQuery()
     {
-        bases = bs;
-        prefixes = ps;
-        where = new SparqlWhere(bs, ps);
+        where = new SparqlWhere();
         order = new SparqlOrder();
     }
     
@@ -24,28 +20,28 @@ public abstract class SparqlQuery {
         System.out.println("dataset: "+dataset);
         System.out.println("limit: "+limit);
         System.out.println("offset: "+offset);
-        if (bases.isEmpty()) 
+        if (Config.getInstance().bases.isEmpty()) 
         {
             System.out.println("bases: [NONE]");
         } 
         else
         {
             System.out.println("bases:");
-            for (String n : bases) 
+            for (String n : Config.getInstance().bases) 
             {
                 System.out.println("\t" + n);
             }
         }
-        if (prefixes.isEmpty()) 
+        if (Config.getInstance().prefixes.isEmpty()) 
         {
             System.out.println("prefixes: [NONE]");
         } 
         else
         {
             System.out.println("prefixes:");
-            for (String pr : prefixes.keySet()) 
+            for (String pr : Config.getInstance().prefixes.keySet()) 
             {
-                System.out.println("\t" + pr + " -> " + prefixes.get(pr));
+                System.out.println("\t" + pr + " -> " + Config.getInstance().prefixes.get(pr));
             }
         }
         
@@ -80,20 +76,25 @@ public abstract class SparqlQuery {
     
     protected abstract void execute(List<Hashtable<String, Object>> results);
     
-    protected void getResult(String filename)
+    public void getResult(String filename)
     {
+        if (Config.getInstance().isDebug() == true)
+        {
+            info();
+        }
+        
         Model model = ModelFactory.createDefaultModel();
         model.read(filename);
        
         List<Hashtable<String, Object>> results = where.fetch(model);
         results = order.sort(results);
-        results = makeOffset(results);
-        results = makeLimit(results);
+        results = execOffset(results);
+        results = execLimit(results);
         
         execute(results);
     }
     
-    private List<Hashtable<String, Object>> makeOffset(List<Hashtable<String, Object>> results)
+    private List<Hashtable<String, Object>> execOffset(List<Hashtable<String, Object>> results)
     {
         if (offset > 0)
         {
@@ -107,7 +108,7 @@ public abstract class SparqlQuery {
         return results;
     }
     
-    private List<Hashtable<String, Object>> makeLimit(List<Hashtable<String, Object>> results)
+    private List<Hashtable<String, Object>> execLimit(List<Hashtable<String, Object>> results)
     {
         if (limit >= 0)
         {

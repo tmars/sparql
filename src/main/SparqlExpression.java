@@ -3,6 +3,7 @@ import org.antlr.runtime.*;
 import org.antlr.runtime.tree.*;
 import org.antlr.stringtemplate.*;
 import java.lang.reflect.Method;
+
 class SparqlExpression
 {
     Hashtable<String, Object> vars = null;
@@ -145,7 +146,7 @@ class SparqlExpression
         else if (root.getChildCount() == 1)
         {
             String[] rootOperators = {"VAR_RT", "STRING_RT", "BOOL_RT", 
-                "INTEGER_RT", "FLOAT_RT", "DOUBLE_RT", "CALL_RT"};
+                "INTEGER_RT", "FLOAT_RT", "DOUBLE_RT", "CALL_RT", "IRI_RT"};
             String[] unaryOperators = {"!", "+", "-"};
             
             if (Arrays.asList(rootOperators).contains(text))
@@ -201,6 +202,11 @@ class SparqlExpression
                         System.out.println("Невозможно выполнить функцию: " + nval);
                         System.out.println(e.getMessage());
                     }
+                }
+                // IRI
+                else if (text.equals("IRI_RT"))
+                {
+                    res = Config.getInstance().getRealIRI(nval);
                 }
             }
             if (Arrays.asList(unaryOperators).contains(text))
@@ -268,6 +274,10 @@ class SparqlExpression
                     // <=
                     else if (text.equals("<="))
                         res = (r <= 0);
+                
+                    Config.getInstance().log("COMPARE (" + lval.toString() + " " +
+                        text + " " + rval.toString() + ") = " + (res == null ? "[NULL]" : res.toString()));
+                    
                 }
             }
             else if (Arrays.asList(mathOperators).contains(text))
