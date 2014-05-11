@@ -26,6 +26,14 @@
     <vCard:Given>Sarah</vCard:Given>
     </vCard:N>
   </rdf:Description>
+  
+  <rdf:Description rdf:about="http://somewhere/SarahJones2/">
+    <vCard:FN>Sarah Jones</vCard:FN>
+    <vCard:N rdf:parseType="Resource">
+    <vCard:Family>Jones</vCard:Family>
+    <vCard:Given>Sarah</vCard:Given>
+    </vCard:N>
+  </rdf:Description>
  
   <rdf:Description rdf:about="http://somewhere/MattJones/">
     <vCard:FN xml:lang="fr-BE">Matt Jones</vCard:FN>

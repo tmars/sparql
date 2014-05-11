@@ -76,6 +76,11 @@ public abstract class SparqlQuery {
     
     protected abstract void execute(List<Hashtable<String, Object>> results, Model model);
     
+    protected List<Hashtable<String, Object>> postFetch(List<Hashtable<String, Object>> results)
+    {
+        return results;    
+    }
+    
     public void getResult(String filename)
     {
         if (Config.getInstance().isDebug() == true)
@@ -87,6 +92,7 @@ public abstract class SparqlQuery {
         model.read(filename);
        
         List<Hashtable<String, Object>> results = where.fetch(model);
+        results = postFetch(results);
         results = order.sort(results);
         results = execOffset(results);
         results = execLimit(results);

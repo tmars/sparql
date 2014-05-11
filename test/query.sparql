@@ -1,3 +1,3 @@
 PREFIX vCard: <http://www.w3.org/2001/vcard-rdf/3.0#>
-CONSTRUCT {?x vCard:F ?y}
+SELECT DISTINCT ?y
 WHERE { ?x vCard:FN ?y}

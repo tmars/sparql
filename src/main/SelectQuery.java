@@ -27,25 +27,66 @@ public class SelectQuery extends SparqlQuery {
         fields.add(name);
     }
     
-    protected void execute(List<Hashtable<String, Object>> results, Model model)
-    {   
+    private List<String> getColumns(Set<String> allColumns)
+    {
+        List<String> columns = new ArrayList<>();
         if (allFields) 
         {
-            for (Hashtable<String, Object> res: results) 
+            if (allColumns != null)
             {
-                for (String v : res.keySet()) 
-                    fields.add(v);
-                break;
+                for (String v : allColumns)
+                {
+                    columns.add(v);
+                }
             }
         }
-        String[] columnNames = fields.toArray(new String[fields.size()]);
+        else
+        {
+            columns = fields;
+        }
+        return columns;
+    }
+    
+    protected List<Hashtable<String, Object>> postFetch(List<Hashtable<String, Object>> results)
+    {
+        List<String> columns = getColumns(results.get(0) == null ? null : results.get(0).keySet());
+        Config.getInstance().log("post start");
+        Set<Integer> allHashes = new HashSet();
+        if (isDistinct)
+        {
+            Iterator<Hashtable<String, Object>> iter = results.iterator();
+            while (iter.hasNext()) {
+                Hashtable<String, Object> row = iter.next(); 
+                Set<Integer> rowHashes = new HashSet();
+                for (String k : columns)
+                {
+                    if (row.get(k) != null)
+                        rowHashes.add(row.get(k).toString().hashCode());
+                }
+                
+                Integer rowHash = rowHashes.hashCode();
+                if (allHashes.contains(rowHash))
+                    iter.remove();
+                else
+                    allHashes.add(rowHash);
+            }
+        }
+        Config.getInstance().log("post end");
+        return results;
+    }
+    
+    protected void execute(List<Hashtable<String, Object>> results, Model model)
+    {   
+        List<String> columns = getColumns(results.get(0) == null ? null : results.get(0).keySet());
+        
+        String[] columnNames = columns.toArray(new String[columns.size()]);
         String[][] data = new String[results.size()][fields.size()];
         
         int i = 0;
         for (Hashtable<String, Object> res: results) 
         {
             int j = 0;
-            for (String v : fields) 
+            for (String v : columns) 
             {
                 Object o = res.get(v);
                 if (o == null)
