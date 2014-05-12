@@ -1,4 +1,4 @@
-PREFIX vCard: <http://www.w3.org/2001/vcard-rdf/3.0#>
-SELECT DISTINCT ?y
-FROM <test/data/1.rdf>
-WHERE { ?x vCard:FN ?y}
+PREFIX dc: <http://purl.org/dc/elements/1.1/>
+DESCRIBE <file:///C:/Users/marcky/workspace/sparql/DesignIssues/Overview.html>
+FROM <test/data/3.rdf>
+WHERE { ?x dc:title ?y}

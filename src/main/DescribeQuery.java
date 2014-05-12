@@ -24,8 +24,8 @@ public class DescribeQuery extends SparqlQuery
             vars.add(name);
         
         else if (type.equals("iri"))
-            iriRefs.add(name);
-            
+            iriRefs.add(name.substring(1, name.length()-1));
+        
         else if (type.equals("short_iri"))
             iriRefs.add(Config.getInstance().getRealIRI(name));
             
@@ -60,7 +60,6 @@ public class DescribeQuery extends SparqlQuery
                 }
             }
         }
-        Config.getInstance().log("resources: " + iriRefs);
         
         Model mout = ModelFactory.createDefaultModel();
         for (String r : iriRefs)
