@@ -50,7 +50,6 @@ public class SelectQuery extends SparqlQuery {
     protected List<Hashtable<String, Object>> postFetch(List<Hashtable<String, Object>> results)
     {
         List<String> columns = getColumns(results.get(0) == null ? null : results.get(0).keySet());
-        Config.getInstance().log("post start");
         Set<Integer> allHashes = new HashSet();
         if (isDistinct)
         {
@@ -71,7 +70,6 @@ public class SelectQuery extends SparqlQuery {
                     allHashes.add(rowHash);
             }
         }
-        Config.getInstance().log("post end");
         return results;
     }
     

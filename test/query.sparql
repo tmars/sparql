@@ -1,3 +1,4 @@
 PREFIX vCard: <http://www.w3.org/2001/vcard-rdf/3.0#>
 SELECT DISTINCT ?y
+FROM <test/data/1.rdf>
 WHERE { ?x vCard:FN ?y}

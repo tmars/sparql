@@ -1,7 +1,8 @@
 import java.util.*;
 import com.hp.hpl.jena.rdf.model.*;
 
-public abstract class SparqlQuery {
+public abstract class SparqlQuery
+{
     String dataset = "";
     int limit = -1;
     int offset = -1;
@@ -88,16 +89,32 @@ public abstract class SparqlQuery {
             info();
         }
         
-        Model model = ModelFactory.createDefaultModel();
-        model.read(filename);
-       
-        List<Hashtable<String, Object>> results = where.fetch(model);
-        results = postFetch(results);
-        results = order.sort(results);
-        results = execOffset(results);
-        results = execLimit(results);
+        if (!dataset.equals(""))
+        {
+            filename = dataset;
+        }
         
-        execute(results, model);
+        try
+        {
+            Model model = ModelFactory.createDefaultModel();
+            model.read(filename);
+    
+            List<Hashtable<String, Object>> results = where.fetch(model);
+            results = postFetch(results);
+            results = order.sort(results);
+            results = execOffset(results);
+            results = execLimit(results);
+            
+            execute(results, model);
+        }
+        catch (com.hp.hpl.jena.shared.JenaException e)
+        {
+            System.out.println("Ошибка чтения данных: " + e.getMessage());
+        }
+        catch (Exception e)
+        {
+            System.out.println("Ошибка выполнения скрипта: " + e.getMessage());
+        }
     }
     
     private List<Hashtable<String, Object>> execOffset(List<Hashtable<String, Object>> results)

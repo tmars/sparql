@@ -82,7 +82,7 @@ datasetClause
     ;
 
 defaultGraphClause
-    : s=sourceSelector {query.setDataset($s.text);}
+    : s=sourceSelector {query.setDataset($s.text.substring(1, $s.text.length()-1));}
     ;
 
 namedGraphClause
