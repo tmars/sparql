@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rdf:RDF
+  xmlns:foaf="http://xmlns.com/foaf/0.1/"
+  xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+  xmlns:dc="http://purl.org/dc/elements/1.1/"
+>
+  <rdf:Description rdf:nodeID="f4218040048b1">
+    <foaf:givenName>Alice</foaf:givenName>
+  </rdf:Description>
+  <rdf:Description rdf:nodeID="f4218040048b2">
+    <foaf:givenName>Bob</foaf:givenName>
+    <dc:date rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">2005-04-04T04:04:04+00:00</dc:date>
+  </rdf:Description>
+</rdf:RDF>
+

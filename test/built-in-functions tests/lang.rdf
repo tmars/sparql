@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rdf:RDF
+  xmlns:foaf="http://xmlns.com/foaf/0.1/"
+  xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+>
+  <rdf:Description rdf:nodeID="f4231112368b1">
+    <foaf:mbox rdf:resource="mailto:bob@work.example"/>
+    <foaf:name xml:lang="en">Robert</foaf:name>
+    <foaf:name xml:lang="es">Roberto</foaf:name>
+  </rdf:Description>
+</rdf:RDF>
