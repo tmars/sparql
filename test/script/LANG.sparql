@@ -1,6 +1,6 @@
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 SELECT ?name ?mbox
-FROM <test/data/lang.rdf>
+FROM <test/data/LANG.rdf>
  WHERE { ?x foaf:name  ?name ;
             foaf:mbox  ?mbox .
          FILTER (LANG(?name) = "es") }

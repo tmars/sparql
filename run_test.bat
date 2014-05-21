@@ -1,0 +1,1 @@
+run test/script/%1.sparql %2
