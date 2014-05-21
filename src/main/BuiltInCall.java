@@ -34,10 +34,15 @@ class BuiltInCall
         {
             throw new Exception("Wrong number of arguments");
         }
-		
-		String result = args.get(0).toString();
-		
-		return result;
+		if (args.get(0) instanceof RDFNode)
+		{
+			RDFLiteral lit = new RDFLiteral(args.get(0).toString(), "", "");
+			return lit.toString();
+		}
+		else
+		{
+			return args.get(0).toString();
+		}
 	}
     
 	//  http://www.w3.org/TR/sparql11-query/#func-lang

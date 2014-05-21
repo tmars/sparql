@@ -36,9 +36,9 @@ class RDFLiteral
             }
             else
             {
-                if (t.contains("a"))
+                if (t.contains("@"))
                 {
-                    sp = t.lastIndexOf("a");
+                    sp = t.lastIndexOf("@");
                     setText(t.substring(0, sp));
                     language = t.substring(sp+1, t.length());
                 }

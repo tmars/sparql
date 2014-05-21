@@ -3,4 +3,4 @@ SELECT ?name ?mbox
 FROM <test/data/STR.rdf>
 WHERE { ?x foaf:name  ?name ;
            foaf:mbox  ?mbox .
-        FILTER REGEX(STR(?mbox), "@work.example$") }
+        FILTER REGEX(STR(?mbox), ".*@work.example$") }
