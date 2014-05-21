@@ -191,7 +191,7 @@ class BuiltInCall
 			throw new Exception("Wrong number of arguments");
 		}
 		
-		if (args.get(0).toString().equals("_") || args.get(0).toString().equals("_:"))
+		if ( ((RDFNode)args.get(0)).getType() == RDFNode.Type.RESOURCE ) 
 			return true;
 		
 		return false;

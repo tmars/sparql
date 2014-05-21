@@ -193,15 +193,7 @@ class SparqlExpression
                     List<Object> args = new ArrayList();
                     for (int i = 0; i < node.getChildCount(); i++)
                         args.add(exec((CommonTree)node.getChild(i)));
-                    try 
-                    {
-                        res = BuiltInCall.exec(nval, args);
-                    }
-                    catch (Exception e)
-                    {
-                        System.out.println("Невозможно выполнить функцию: " + nval);
-                        System.out.println(e.getMessage());
-                    }
+                    res = BuiltInCall.exec(nval, args);
                 }
                 // IRI
                 else if (text.equals("IRI_RT"))
