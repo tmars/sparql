@@ -20,12 +20,17 @@ tokens {
 
 @members{
     SparqlQuery query = null;
+	java.util.List<SparqlQuery> queries = new java.util.ArrayList();
 	TripletConstructor trpConstr = new TripletConstructor();
 	
     private SelectQuery sq() {return (SelectQuery)query;}
     private AskQuery aq() {return (AskQuery)query;}
     private ConstructQuery cq() {return (ConstructQuery)query;}
     private DescribeQuery dq() {return (DescribeQuery)query;}
+	private void newQuery()
+	{
+		queries.add(query);
+	}
 }
 
 @rulecatch { }
@@ -34,7 +39,12 @@ tokens {
 
 query
     : 
-    prologue ( selectQuery | constructQuery | describeQuery | askQuery ) EOF {}
+    prologue queryItem (';' queryItem)* (';')? EOF
+    ;
+	
+queryItem
+    : 
+    ( selectQuery | constructQuery | describeQuery | askQuery ) {newQuery();}
     ;
 
 prologue

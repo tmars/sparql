@@ -24,7 +24,9 @@ public class QueryExec {
 				Config.getInstance().setDebug(true);
 			else
 				Config.getInstance().setDebug(false);
-			parser.query.getResult(filename);
+				
+			for (SparqlQuery q : parser.queries)
+				q.getResult(filename);
 		}
 		catch (MismatchedTokenException e)
 		{
