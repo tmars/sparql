@@ -30,7 +30,10 @@ public class QueryExec {
 		}
 		catch (MismatchedTokenException e)
 		{
-			System.out.println("Ошибка разбора скрипта: " + e.getMessage());
+			System.out.println("Ошибка разбора скрипта: " +
+				"строка=" + Integer.toString(e.line) +
+				", индекс=" + Integer.toString(e.index) +
+				", токен='" + e.token.getText() + "'.");
 		}
 		catch (NoViableAltException e)
 		{
