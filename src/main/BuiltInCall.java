@@ -12,10 +12,19 @@ class BuiltInCall
 		Method[] methods = BuiltInCall.class.getMethods();
 		try 
 		{
-			for (Method m : methods) if (m.getName().equals(call)) 
+			for (Method m : methods)
 			{
-				res = m.invoke(BuiltInCall.class, args);
-				break;
+				if (m.getName().equals(call)) 
+				{
+					res = m.invoke(BuiltInCall.class, args);
+					if (Config.getInstance().isDebug())
+					{
+						String str = "";
+						for (Object t : args) str += t.toString() + ", ";
+						Config.getInstance().log("BuiltInCall::" + call + "(" + str + ") = " + res);
+					}
+					break;
+				}
 			}
 		}
 		catch (Exception e)
@@ -149,7 +158,7 @@ class BuiltInCall
 		String textA = args.get(0).toString();
 		String textB = args.get(1).toString();
 		Boolean result = textA.equals(textB);
-		
+			
 		return result;
 	}
 
@@ -264,13 +273,11 @@ class BuiltInCall
 		if (2 == size)
 		{
             r = _REGEX(text, pattern);
-			Config.getInstance().log("REGEX(" + text + ", " + pattern + ") = " + r);
 		}
 		else if (3 == size)
 		{
             String flags = args.get(2).toString();
             r = _REGEX(text, pattern, flags);
-        	Config.getInstance().log("REGEX(" + text + ", " + pattern + ", " + flags + ") = " + r);
 		}
 		return r;
     }

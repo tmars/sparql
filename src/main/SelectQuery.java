@@ -32,7 +32,7 @@ public class SelectQuery extends SparqlQuery {
         List<String> columns = new ArrayList<>();
         if (this.allFields) 
         {
-            if (results.size() > 0)
+            if (results.size() > 0) 
             {
                 for (String v : results.get(0).keySet())
                 {
@@ -42,8 +42,19 @@ public class SelectQuery extends SparqlQuery {
         }
         else
         {
-            columns = this.fields;
+            for (String v: this.fields)
+            {
+                columns.add(v);
+            }
+            if (Config.getInstance().isDebug() && results.size() > 0)
+            {
+                for (String v : results.get(0).keySet()) if (v.startsWith(this.where.filterPrefix))
+                {
+                    columns.add(v);
+                }
+            }
         }
+        
         return columns;
     }
     

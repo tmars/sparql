@@ -9,6 +9,8 @@ public class SparqlWhere
 	List<List<WhereTriplet>> tripletsSets = new ArrayList<>();
     List<CommonTree> filters = new ArrayList<>();
     
+	String filterPrefix = "FILTER:";
+	
     public SparqlWhere()
     {
     }
@@ -44,7 +46,7 @@ public class SparqlWhere
 					if (result == null)
 						result = false;
 					results.get(i).put(
-						"[FILTER:"+Integer.toString(j)+"]", 
+						this.filterPrefix+Integer.toString(j), 
 						result.toString()
 					);
 				}

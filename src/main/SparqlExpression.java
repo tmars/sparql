@@ -209,7 +209,7 @@ class SparqlExpression
                     res = Config.getInstance().getRealIRI(nval);
                 }
             }
-            if (Arrays.asList(unaryOperators).contains(text))
+            else if (Arrays.asList(unaryOperators).contains(text))
             {
                 Object nval = exec((CommonTree)root.getChild(0));
                 // !
@@ -231,12 +231,17 @@ class SparqlExpression
                     res = 0.0 - ((Number)nval).doubleValue();
                 }
             }
+            else
+            {
+                Config.getInstance().log("Неизвестный унарный оператор: " + text);
+            }
         }
         // BIN
         else if (root.getChildCount() == 2)
         {
             String[] compareOperators = {"=", "!=", ">", ">=", "<", "<="};
             String[] mathOperators = {"+", "-", "*", "/"};
+            String[] logOperators = {"&&", "||"};
             if (Arrays.asList(compareOperators).contains(text))
             {
                 Object lval = exec((CommonTree)root.getChild(0));
@@ -302,6 +307,29 @@ class SparqlExpression
                 // /
                 else if (text.equals("/") && rval != 0.0)
                     res = lval / rval;
+            }
+            else if (Arrays.asList(logOperators).contains(text))
+            {
+                Object lval = exec((CommonTree)root.getChild(0));
+                Object rval = exec((CommonTree)root.getChild(1));
+                if (lval == null) lval = false;
+                if (rval == null) rval = false;
+                
+                if (!(lval instanceof Boolean) ||
+                    !(lval instanceof Boolean))
+                    res = false;
+                
+                // &&
+                else if (text.equals("&&"))
+                    res = ((Boolean)lval) && ((Boolean)rval);
+                
+                // ||
+                else if (text.equals("||"))
+                    res = ((Boolean)lval) || ((Boolean)rval);
+            }
+            else
+            {
+                Config.getInstance().log("Неизвестный бинарный оператор: " + text);
             }
         }
         return res;
