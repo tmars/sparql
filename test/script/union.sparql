@@ -1,0 +1,24 @@
+PREFIX vCard: <http://www.w3.org/2001/vcard-rdf/3.0#>
+
+SELECT DISTINCT ?family
+FROM <test/data/1.rdf>
+WHERE {
+    ?x vCard:Family  ?family
+}
+ORDER BY ?family;
+
+SELECT DISTINCT ?given
+FROM <test/data/1.rdf>
+WHERE {
+    ?x vCard:Given  ?given
+}
+ORDER BY ?given;
+
+SELECT DISTINCT ?val
+FROM <test/data/1.rdf>
+WHERE {
+    {?x vCard:Family  ?val}
+    UNION
+    {?x vCard:Given  ?val}
+}
+ORDER BY ?val;

@@ -1,0 +1,14 @@
+PREFIX vCard: <http://www.w3.org/2001/vcard-rdf/3.0#>
+
+SELECT ?name
+FROM <test/data/1.rdf>
+WHERE {
+    ?x vCard:FN  ?name .
+};
+
+ASK
+FROM <test/data/1.rdf>
+WHERE {
+    ?x vCard:FN  ?name .
+    FILTER (?name = "John Smith")
+};
