@@ -3,4 +3,4 @@ SELECT ?title
 FROM <test/data/LANGMATCHES.rdf>
  WHERE { ?x dc:title  "That Seventies Show"@en ;
             dc:title  ?title .
-         FILTER LANGMATCHES( lang(?title), "FR" ) }
+         FILTER LANGMATCHES(LANG(?title), "FR") }
