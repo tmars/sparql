@@ -15,7 +15,7 @@
     <vCard:FN>Becky Smith</vCard:FN>
     <vCard:N rdf:parseType="Resource">
     <vCard:Family>Smith</vCard:Family>
-    <vCard:Given rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">123</vCard:Given>
+    <vCard:Given>Becky</vCard:Given>
     </vCard:N>
   </rdf:Description>
  

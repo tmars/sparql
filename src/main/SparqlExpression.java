@@ -75,7 +75,22 @@ class SparqlExpression
                 }
             }
             else if (b instanceof String)
+            {
                 diff = ((String)a).compareTo((String)b);
+            }
+            else if (b instanceof RDFNode)
+            {
+                if (((RDFNode)b).getType() == RDFNode.Type.LITERAL)
+                {
+                    RDFLiteral alit = new RDFLiteral(a.toString());    
+                    RDFLiteral blit = new RDFLiteral(b.toString());
+                    diff = alit.compareTo(blit);
+                }
+                else
+                {
+                    diff = a.toString().compareTo(b.toString());
+                }
+            }
         }
         else if (a instanceof Boolean)
         {
@@ -95,6 +110,19 @@ class SparqlExpression
             {
                 if (aval == (Boolean)b)
                     diff = 0;
+            }
+        }
+        else if (a instanceof RDFNode)
+        {
+            if (((RDFNode)a).getType() == RDFNode.Type.LITERAL)
+            {
+                RDFLiteral alit = new RDFLiteral(a.toString());    
+                RDFLiteral blit = new RDFLiteral(b.toString());
+                diff = alit.compareTo(blit);
+            }
+            else
+            {
+                diff = a.toString().compareTo(b.toString());
             }
         }
         //if (diff == null) System.out.println("null");

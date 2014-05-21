@@ -97,4 +97,18 @@ class RDFLiteral
             ) 
         );
     }
+    
+    public int compareTo(RDFLiteral r)
+    {
+        int res = this.getText().compareTo(r.getText());
+        if (res == 0 && !this.language.equals("") && !r.language.equals(""))
+        {
+            res += this.language.compareTo(r.language);
+        }
+        if (res == 0 && !this.datatype.equals("") && !r.datatype.equals(""))
+        {
+            res += this.datatype.compareTo(r.datatype);
+        }
+        return res;
+    }
 }
