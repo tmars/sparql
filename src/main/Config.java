@@ -1,4 +1,5 @@
 import java.util.*;
+import java.io.*;
 
 class Config
 {
@@ -40,5 +41,15 @@ class Config
     {
         if (isDebug())
             System.out.println(s);
+    }
+    
+    public void printStackTrace(Exception e)
+    {
+        if (debug == true)
+        {
+            StringWriter errors = new StringWriter();
+            e.printStackTrace(new PrintWriter(errors));
+            this.log(errors.toString());
+        }
     }
 }

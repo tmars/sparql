@@ -3,24 +3,27 @@ import java.lang.reflect.Method;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-class BuildInCall
+class BuiltInCall
 {
   
 	public static Object exec(String call, List<Object> args)
 	{
 		Object res = null;
-		Method[] methods = BuildInCall.class.getMethods();
+		Method[] methods = BuiltInCall.class.getMethods();
 		try 
 		{
 			for (Method m : methods) if (m.getName().equals(call)) 
 			{
-				res = m.invoke(BuildInCall.class, args);
+				res = m.invoke(BuiltInCall.class, args);
 				break;
 			}
 		}
 		catch (Exception e)
 		{
-		}
+			Config.getInstance().log("Ошибка выполнения встроенной функции " +
+				call + ": " + e.getMessage());
+			Config.getInstance().printStackTrace(e);
+        }
 		return res;
 	}
 	
@@ -245,25 +248,25 @@ class BuildInCall
 	public static Object REGEX(List<Object> args) throws Exception
 	{
 		int size = args.size();
-		
+		if (size != 2 && size != 3)
+		{
+			throw new Exception("Wrong number of arguments");
+		}
+		RDFLiteral lit = new RDFLiteral(args.get(0).toString());
+		String text = lit.getText();
+        String pattern = args.get(1).toString();
+        Object r = false;
 		if (2 == size)
 		{
-            String text = args.get(0).toString();
-            String pattern = args.get(1).toString();
-            Object r = _REGEX(text, pattern);
+            r = _REGEX(text, pattern);
 			Config.getInstance().log("REGEX(" + text + ", " + pattern + ") = " + r);
-			return r;
 		}
 		else if (3 == size)
 		{
-            String text = args.get(0).toString();
-            String pattern = args.get(1).toString();
             String flags = args.get(2).toString();
-            Object r = _REGEX(text, pattern, flags);
+            r = _REGEX(text, pattern, flags);
         	Config.getInstance().log("REGEX(" + text + ", " + pattern + ", " + flags + ") = " + r);
-			return r;
 		}
-      
-		throw new Exception("Wrong number of arguments");
-	}
+		return r;
+    }
 }

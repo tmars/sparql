@@ -27,14 +27,14 @@ public class SelectQuery extends SparqlQuery {
         fields.add(name);
     }
     
-    private List<String> getColumns(Set<String> allColumns)
+    private List<String> getColumns(List<Hashtable<String, Object>> results)
     {
         List<String> columns = new ArrayList<>();
-        if (allFields) 
+        if (this.allFields) 
         {
-            if (allColumns != null)
+            if (results.size() > 0)
             {
-                for (String v : allColumns)
+                for (String v : results.get(0).keySet())
                 {
                     columns.add(v);
                 }
@@ -42,14 +42,14 @@ public class SelectQuery extends SparqlQuery {
         }
         else
         {
-            columns = fields;
+            columns = this.fields;
         }
         return columns;
     }
     
     protected List<Hashtable<String, Object>> postFetch(List<Hashtable<String, Object>> results)
     {
-        List<String> columns = getColumns(results.get(0) == null ? null : results.get(0).keySet());
+        List<String> columns = getColumns(results);
         Set<Integer> allHashes = new HashSet();
         if (isDistinct)
         {
@@ -75,10 +75,10 @@ public class SelectQuery extends SparqlQuery {
     
     protected void execute(List<Hashtable<String, Object>> results, Model model)
     {   
-        List<String> columns = getColumns(results.get(0) == null ? null : results.get(0).keySet());
+        List<String> columns = getColumns(results);
         
         String[] columnNames = columns.toArray(new String[columns.size()]);
-        String[][] data = new String[results.size()][fields.size()];
+        String[][] data = new String[results.size()][columns.size()];
         
         int i = 0;
         for (Hashtable<String, Object> res: results) 

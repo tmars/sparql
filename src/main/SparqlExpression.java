@@ -195,7 +195,7 @@ class SparqlExpression
                         args.add(exec((CommonTree)node.getChild(i)));
                     try 
                     {
-                        res = BuildInCall.exec(nval, args);
+                        res = BuiltInCall.exec(nval, args);
                     }
                     catch (Exception e)
                     {

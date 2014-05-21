@@ -7,7 +7,7 @@ class RDFLiteral
     
     public RDFLiteral(String t, String d, String l)
     {
-        if (t != null) text = t;
+        if (t != null) setText(t);
         if (d != null) datatype = d;
         if (l != null) language = l;
     }
@@ -16,23 +16,43 @@ class RDFLiteral
     {
         if (t == null)
         {
-            text = "";
-        }
-        else if (t.contains("@"))
-        {
-            int sp = t.lastIndexOf("@");
-            setText(t.substring(0, sp));
-            language = t.substring(sp+1, t.length());
-        }
-        else if (t.contains("^^"))
-        {
-            int sp = t.lastIndexOf("^^");
-            setText(t.substring(0, sp));
-            datatype = t.substring(sp+2, t.length());
+            setText("");
         }
         else
         {
-            setText(t);
+            int sp = t.lastIndexOf("\"");
+            if (t.charAt(0) == '"' && sp > 0)
+            {
+                setText(t.substring(1, sp));
+                String tail = t.substring(sp+1, t.length());
+                if (tail.length() > 2)
+                {
+                    if (tail.substring(0, 1).equals("@"))
+                        language = tail.substring(1, tail.length());
+                
+                    else if (tail.substring(0, 2).equals("^^"))
+                        datatype = tail.substring(2, tail.length());
+                }
+            }
+            else
+            {
+                if (t.contains("a"))
+                {
+                    sp = t.lastIndexOf("a");
+                    setText(t.substring(0, sp));
+                    language = t.substring(sp+1, t.length());
+                }
+                else if (t.contains("^^"))
+                {
+                    sp = t.lastIndexOf("^^");
+                    setText(t.substring(0, sp));
+                    datatype = t.substring(sp+2, t.length());
+                }
+                else
+                {
+                    setText(t);
+                }    
+            }
         }
     }
     
@@ -69,7 +89,7 @@ class RDFLiteral
     {
         return (
             text.equals(r.text) &&
-            BuildInCall._LANGMATCHES(language, r.language) &&
+            BuiltInCall._LANGMATCHES(language, r.language) &&
             (
                 datatype.equals("") ||
                 r.datatype.equals("") ||

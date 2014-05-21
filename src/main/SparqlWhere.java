@@ -41,6 +41,8 @@ public class SparqlWhere
 				{
 					expr.setVars(results.get(i));
 					Object result = expr.exec(filters.get(j));
+					if (result == null)
+						result = false;
 					results.get(i).put(
 						"[FILTER:"+Integer.toString(j)+"]", 
 						result.toString()
@@ -121,9 +123,11 @@ public class SparqlWhere
                         boolean isEquals = true;
                         for (String v : intersection) 
                         {
-                            if (!curRes.get(v).equals(prevResults.get(i).get(v))) 
+							String a = curRes.get(v).toString();
+							String b = prevResults.get(i).get(v).toString();
+                            if (!a.equals(b)) 
                             {
-                                isEquals = false;
+							    isEquals = false;
                                 break;
                             }
                         }
@@ -136,7 +140,7 @@ public class SparqlWhere
                                 res.put(v, prevResults.get(i).get(v));
                             for (String v : curRes.keySet()) 
                                 res.put(v, curRes.get(v));
-                            curResults.add(res);
+							curResults.add(res);
                             activeIndexes.add(i);
                         }
                     } 

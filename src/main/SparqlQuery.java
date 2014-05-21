@@ -114,6 +114,7 @@ public abstract class SparqlQuery
         catch (Exception e)
         {
             System.out.println("Ошибка выполнения скрипта: " + e.getMessage());
+            Config.getInstance().printStackTrace(e);
         }
     }
     

@@ -1,4 +1,6 @@
-PREFIX dc: <http://purl.org/dc/elements/1.1/>
-DESCRIBE <file:///C:/Users/marcky/workspace/sparql/DesignIssues/Overview.html>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT ?name ?mbox
 FROM <test/data/3.rdf>
-WHERE { ?x dc:title ?y}
+WHERE { ?x foaf:name  ?name ;
+            foaf:mbox  ?mbox .
+         FILTER REGEX(STR(?mbox), ".*@work.example$") }
