@@ -3,12 +3,12 @@ import org.antlr.runtime.*;
 import org.antlr.runtime.tree.*;
 import org.antlr.stringtemplate.*;
 import java.io.*;
+import java.util.*;
 
 public class QueryExec {
     public static void main(String[] args) throws Exception {
 		try
 		{
-			RDFLiteral lit = new RDFLiteral("\"alice@work.example\"");
 			LogManager.getRootLogger().setLevel(Level.OFF);
 			ANTLRFileStream in = new ANTLRFileStream(args[0]);
 			SparqlLexer lexer = new SparqlLexer(in);
@@ -16,11 +16,15 @@ public class QueryExec {
 			SparqlParser parser = new SparqlParser(tokens);
 			parser.query(); 
 			
-			if (args.length > 2 && args[2].equals("-d"))
+			String filename = "";
+			if (args.length > 1 && !args[1].equals("-d"))
+				filename = args[1];
+			
+			if (Arrays.asList(args).contains("-d"))
 				Config.getInstance().setDebug(true);
 			else
 				Config.getInstance().setDebug(false);
-			parser.query.getResult(args[1]);
+			parser.query.getResult(filename);
 		}
 		catch (MismatchedTokenException e)
 		{
@@ -32,6 +36,10 @@ public class QueryExec {
 				"строка=" + Integer.toString(e.line) +
 				", индекс=" + Integer.toString(e.index) +
 				", токен='" + e.token.getText() + "'.");
+		}
+		catch (FileNotFoundException e)
+		{
+			System.out.println("Ошибка: файл со скриптом отсутсвует:" + e.getMessage());
 		}
 		catch (Exception e)
 		{
